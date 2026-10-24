@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self'">
+  <title>Exportación</title>
+  <link rel="stylesheet" href="../vendor/fonts/fonts.css">
+  <style>
+    html, body { margin: 0; padding: 0; background: #fff; }
+    body.pdf { width: 297mm; height: 210mm; position: relative; overflow: hidden; }
+    @page { size: 297mm 210mm; margin: 0; }
+    body.png { overflow: hidden; }
+    .note { position: absolute; font: 7pt/1.3 'Inter', sans-serif; color: #444; }
+  </style>
+  <script src="../vendor/JsBarcode.all.min.js"></script>
+  <script src="../vendor/qrcode.js"></script>
+  <script type="module" src="./print.js"></script>
+</head>
+<body></body>
+</html>

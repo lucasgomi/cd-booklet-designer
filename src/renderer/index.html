@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self'">
+  <title>CD Booklet Designer</title>
+  <link rel="stylesheet" href="../vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="./app.css">
+  <script src="../vendor/JsBarcode.all.min.js"></script>
+  <script src="../vendor/qrcode.js"></script>
+  <script src="../vendor/Sortable.min.js"></script>
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-disc"></span>CD Booklet Designer</div>
+    <div class="group">
+      <button data-cmd="new" title="Nuevo proyecto (Ctrl+N)">Nuevo</button>
+      <button data-cmd="open" title="Abrir proyecto (Ctrl+O)">Abrir…</button>
+      <button data-cmd="save" title="Guardar (Ctrl+S)">Guardar</button>
+    </div>
+    <div class="group">
+      <button data-cmd="undo" class="icon" title="Deshacer (Ctrl+Z)">↶</button>
+      <button data-cmd="redo" class="icon" title="Rehacer (Ctrl+Y)">↷</button>
+    </div>
+    <label class="group tpl-pick">Plantilla
+      <select id="template-select"></select>
+    </label>
+    <div class="spacer"></div>
+    <div class="print-note" title="Al imprimir el PDF, elige «Tamaño real» o «100 %». No uses «Ajustar a la página».">
+      ⚠ Imprimir al 100 % / tamaño real
+    </div>
+    <div class="group">
+      <button data-cmd="export-pdf" class="primary">Exportar PDF</button>
+      <button data-cmd="export-png">Exportar PNG</button>
+    </div>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <nav class="tabs" id="tabs">
+        <button data-tab="disc" class="active">Disco</button>
+        <button data-tab="tracks">Canciones</button>
+        <button data-tab="design">Diseño</button>
+        <button data-tab="images">Imágenes</button>
+        <button data-tab="booklet">Librito</button>
+      </nav>
+      <div class="tab-body" id="tab-disc"></div>
+      <div class="tab-body" id="tab-tracks" hidden></div>
+      <div class="tab-body" id="tab-design" hidden></div>
+      <div class="tab-body" id="tab-images" hidden></div>
+      <div class="tab-body" id="tab-booklet" hidden></div>
+    </aside>
+
+    <section class="stage">
+      <div class="stage-bar">
+        <button data-cmd="zoom-out" class="icon" title="Alejar">−</button>
+        <span id="zoom-label">100 %</span>
+        <button data-cmd="zoom-in" class="icon" title="Acercar">+</button>
+        <button data-cmd="zoom-fit" title="Ajustar a la ventana">Ajustar</button>
+        <label class="check"><input type="checkbox" id="show-safe" checked> Margen de seguridad (5 mm, no se imprime)</label>
+        <div class="spacer"></div>
+        <span id="size-label" class="muted"></span>
+      </div>
+      <div class="canvas" id="canvas">
+        <div class="sheet-frame" id="sheet-frame"><div id="sheet-host"></div></div>
+      </div>
+      <div class="warnings" id="warnings"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <dialog id="dlg-paste">
+    <form method="dialog">
+      <h2>Pegar lista de canciones</h2>
+      <p class="muted">Una canción por línea, por ejemplo <code>Gimme More – 3:04</code>. También vale
+        <code>1. Título 3:04</code>, <code>Título (3:04)</code> o un título sin duración.</p>
+      <textarea id="paste-text" rows="14" spellcheck="false" placeholder="Gimme More – 3:04&#10;La Que Puede, Puede – 2:34&#10;…"></textarea>
+      <div id="paste-preview" class="muted"></div>
+      <div class="dlg-actions">
+        <label class="check"><input type="checkbox" id="paste-replace" checked> Sustituir la lista actual</label>
+        <div class="spacer"></div>
+        <button value="cancel">Cancelar</button>
+        <button value="ok" class="primary" id="paste-ok">Añadir canciones</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-prompt">
+    <form method="dialog">
+      <h2 id="prompt-title"></h2>
+      <p id="prompt-text" class="muted"></p>
+      <input id="prompt-input" type="text">
+      <div class="dlg-actions">
+        <div class="spacer"></div>
+        <button value="cancel">Cancelar</button>
+        <button value="ok" class="primary">Aceptar</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

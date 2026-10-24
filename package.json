@@ -1,0 +1,87 @@
+{
+  "name": "cd-booklet",
+  "productName": "CD Booklet Designer",
+  "version": "1.0.0",
+  "description": "Editor de libritos para cajas de CD slim",
+  "author": "lucasgomi",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/main/main.js",
+  "scripts": {
+    "postinstall": "node scripts/prepare-vendor.js",
+    "start": "electron .",
+    "test": "node --test test/*.test.js",
+    "smoke": "node scripts/smoke.js",
+    "dist:win": "electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "@fontsource/abril-fatface": "^5.3.0",
+    "@fontsource/anton": "^5.3.0",
+    "@fontsource/archivo-black": "^5.3.0",
+    "@fontsource/arimo": "^5.3.0",
+    "@fontsource/bebas-neue": "^5.3.0",
+    "@fontsource/caveat": "^5.3.0",
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/courier-prime": "^5.3.0",
+    "@fontsource/dm-mono": "^5.3.0",
+    "@fontsource/dm-serif-display": "^5.3.0",
+    "@fontsource/fraunces": "^5.3.0",
+    "@fontsource/great-vibes": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/lora": "^5.3.0",
+    "@fontsource/montserrat": "^5.3.0",
+    "@fontsource/oswald": "^5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
+    "@fontsource/poppins": "^5.3.0",
+    "@fontsource/roboto": "^5.3.0",
+    "@fontsource/space-mono": "^5.3.0",
+    "@fontsource/young-serif": "^5.3.0",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
+    "jsbarcode": "^3.12.3",
+    "qrcode-generator": "^2.0.4",
+    "sortablejs": "^1.15.7"
+  },
+  "build": {
+    "appId": "com.lucasgomi.cdbooklet",
+    "productName": "CD Booklet Designer",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.png",
+      "package.json",
+      "!src/**/*.map"
+    ],
+    "fileAssociations": [
+      {
+        "ext": "cdbook",
+        "name": "Proyecto de librito de CD",
+        "role": "Editor"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "CD-Booklet-Designer-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "CD-Booklet-Designer-Portable-${version}.${ext}"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucasgomi/cd-booklet-designer.git"
+  }
+}
