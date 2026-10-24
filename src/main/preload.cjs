@@ -1,5 +1,5 @@
 // Puente seguro entre la interfaz y el proceso principal.
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 const invoke = (ch) => (...args) => ipcRenderer.invoke(ch, ...args);
 
@@ -9,10 +9,14 @@ contextBridge.exposeInMainWorld('api', {
   setTitle: invoke('app:set-title'),
   closeNow: invoke('app:close-now'),
   smokeDir: invoke('app:smoke-dir'),
+  smokeOnly: invoke('app:smoke-only'),
   initialFile: invoke('app:initial-file'),
   openProject: invoke('project:open'),
   saveProject: invoke('project:save'),
   openCue: invoke('cue:open'),
+  readCue: invoke('cue:read'),
+  // Ruta real de un archivo soltado en la ventana (arrastrar y soltar).
+  pathForFile: (file) => { try { return webUtils.getPathForFile(file); } catch { return ''; } },
   exportPdf: invoke('export:pdf'),
   exportPng: invoke('export:png'),
   showInFolder: invoke('shell:show'),

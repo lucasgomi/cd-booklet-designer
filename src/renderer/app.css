@@ -272,3 +272,32 @@ dialog textarea { font-family: 'JetBrains Mono', Consolas, monospace; font-size:
 .template-cards { grid-template-columns: repeat(3, 1fr); }
 .template-category { color: var(--muted); font-size: 11.5px; font-weight: 600; margin: 10px 0 6px; }
 .template-category:first-of-type { margin-top: 0; }
+
+/* Galería de plantillas */
+.design-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.design-head > div { display: flex; flex-direction: column; }
+.design-head b { font-size: 15px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.gallery-card { display: flex; flex-direction: column; gap: 6px; padding: 6px; text-align: left; white-space: normal; border-radius: 10px; }
+.gallery-card:hover { border-color: #5b6270; }
+.gallery-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: rgba(242, 156, 143, .08); }
+.thumb-box { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 5px; background: #2a2e35; display: grid; place-items: center; }
+.thumb-inner { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
+.gallery-label { display: flex; flex-direction: column; line-height: 1.25; padding: 0 2px 2px; }
+.gallery-label b { font-size: 12px; }
+.gallery-label small { color: var(--muted); font-size: 11px; }
+.tabs button { padding: 10px 2px; font-size: 12.5px; }
+
+/* Arrastrar y soltar */
+.drop-overlay { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; pointer-events: none;
+  background: rgba(79, 127, 214, .18); border: 3px dashed var(--accent-2); }
+.drop-overlay div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 26px; font-size: 18px; font-weight: 700; text-align: center; }
+.drop-overlay small { font-size: 12px; font-weight: 400; color: var(--muted); }
+
+/* Avisos enlazados con la lista */
+.warn-link { color: inherit; text-decoration: underline dotted; cursor: pointer; }
+.warn-link:hover { color: var(--text); }
+.track-row.overflow { box-shadow: inset 3px 0 0 var(--warn); }
+.track-row.overflow .num { color: var(--warn); font-weight: 700; }
+.track-row.flash { animation: flash 1.4s ease; }
+@keyframes flash { 0%, 60% { background: rgba(232, 181, 74, .25); } 100% { background: transparent; } }

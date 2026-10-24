@@ -112,7 +112,11 @@ export function renderTracksPanel(root, { openPaste }) {
 
 async function importCue() {
   const res = await window.api.openCue();
-  if (!res) return;
+  if (res) importCueResult(res);
+}
+
+/** Importa un .cue ya leído (desde el diálogo o soltado en la ventana). */
+export function importCueResult(res) {
   const cue = parseCue(res.text);
   const { disc, tracks, missing } = cueToTracks(cue, res.durations);
   if (!tracks.length) { toast('El .cue no contiene pistas.', 'bad'); return; }

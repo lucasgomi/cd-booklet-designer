@@ -2,7 +2,7 @@
 // más la gestión de plantillas propias y de fuentes de Google.
 import { store, commit } from '../store.js';
 import { h, section, row, textInput, textArea, toggle, select, colorInput, numberInput, opacityInput, button, toast, prompt } from '../ui.js';
-import { getTemplate, templateCategories } from '../../shared/templates/index.js';
+import { getTemplate } from '../../shared/templates/index.js';
 import { currentStyle } from '../../shared/model.js';
 import { fontCatalog, loadCustomFonts, BUNDLED_FONTS } from '../../shared/fonts.js';
 
@@ -153,32 +153,9 @@ export function renderDesignPanel(root) {
   const tpl = getTemplate(store.state.templateId);
   const style = currentStyle(store.state);
   root.replaceChildren();
-  root.appendChild(section('Plantilla', ...templateCategories().flatMap((cat) => [
-    h('div', { class: 'template-category', text: cat.name }),
-    h('div', { class: 'template-cards' }, ...cat.templates.map((t) => {
-      const card = h('button', { type: 'button', class: `template-card${t.id === tpl.id ? ' active' : ''}` },
-        h('b', { text: t.name }), h('small', { text: t.description }));
-      card.addEventListener('click', () => switchTemplate(t.id));
-      return card;
-    })),
-  ])));
-  if (tpl.presets?.length) {
-    root.appendChild(section('Estilos incluidos',
-      h('div', { class: 'preset-grid' }, ...tpl.presets.map((p) => {
-        const st = { ...tpl.defaults, ...p.style };
-        const swatches = [st.bgColor || st.bgColor1, st.paperColor || st.headerColor || st.bgColor2, st.numberColor || st.accentColor, st.trackTitleColor || st.textColor]
-          .filter(Boolean).slice(0, 4);
-        const btn = h('button', { type: 'button', class: 'preset', title: `Aplicar «${p.name}» (se puede deshacer)` },
-          h('span', { class: 'preset-swatches' }, ...swatches.map((c) => h('span', { style: { background: c } }))),
-          h('span', { text: p.name }));
-        btn.addEventListener('click', () => {
-          commit((s) => { s.styles[s.templateId] = { ...tpl.defaults, ...p.style }; }, { rebuild: 'design' });
-          toast(`Estilo «${p.name}» aplicado. Ctrl+Z para deshacer.`, 'ok');
-        });
-        return btn;
-      })),
-      h('p', { class: 'help', text: 'Sustituye los colores, tipografías y ajustes de esta plantilla. Los datos e imágenes no cambian.' })));
-  }
+  root.appendChild(h('div', { class: 'design-head' },
+    h('div', {}, h('small', { class: 'muted', text: 'Ajustando la plantilla' }), h('b', { text: tpl.name })),
+    button('Cambiar plantilla o estilo…', () => document.querySelector('#tabs [data-tab="gallery"]').click())));
   root.appendChild(userTemplatesSection());
   for (const sec of tpl.controls) {
     root.appendChild(collapsible(sec.section, sec.items.map((it) => control(it, style)).filter(Boolean)));

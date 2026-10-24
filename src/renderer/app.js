@@ -4,11 +4,12 @@ import { defaultState, normalizeState, FILE_FORMAT, FILE_VERSION } from '../shar
 import { templateCategories } from '../shared/templates/index.js';
 import { loadCustomFonts } from '../shared/fonts.js';
 import { renderDiscPanel } from './panels/disc.js';
-import { renderTracksPanel, updateTracksSummary, setupPasteDialog } from './panels/tracks.js';
+import { renderTracksPanel, updateTracksSummary, setupPasteDialog, importCueResult } from './panels/tracks.js';
 import { renderDesignPanel, refreshUserTemplates, switchTemplate } from './panels/design.js';
-import { renderImagesPanel, setSelectedSticker } from './panels/images.js';
+import { renderImagesPanel, setSelectedSticker, addStickerFiles } from './panels/images.js';
 import { renderBookletPanel } from './panels/booklet.js';
-import { initPreview, schedule, fit, zoomIn, zoomOut, toggleSafe } from './preview.js';
+import { renderGalleryPanel } from './panels/gallery.js';
+import { initPreview, schedule, fit, zoomIn, zoomOut, toggleSafe, markTrackRows } from './preview.js';
 import { exampleProject } from './example.js';
 import { toast } from './ui.js';
 
@@ -20,6 +21,7 @@ const openPaste = setupPasteDialog();
 const panels = {
   disc: () => renderDiscPanel($('tab-disc')),
   tracks: () => renderTracksPanel($('tab-tracks'), { openPaste }),
+  gallery: () => renderGalleryPanel($('tab-gallery')),
   design: () => renderDesignPanel($('tab-design')),
   images: () => renderImagesPanel($('tab-images')),
   booklet: () => renderBookletPanel($('tab-booklet'), { exportPdf, exportPng }),
@@ -34,11 +36,17 @@ const REBUILD = {
   booklet: ['booklet'],
 };
 
+let galleryStale = true;
+
 function rebuild(which) {
   const names = which === true ? Object.keys(panels) : REBUILD[which] || [];
+  // La galería es costosa: sólo se redibuja si está a la vista (y al abrirla).
+  if (which && which !== true && !$('tab-gallery').hidden && !names.includes('gallery')) names.push('gallery');
+  if ($('tab-gallery').hidden) galleryStale = true;
   // Conserva el scroll de cada panel al redibujarlo.
   for (const n of names) {
     const el = $(`tab-${n}`);
+    if (n === 'gallery' && el.hidden) continue;
     const top = el.scrollTop;
     panels[n]();
     el.scrollTop = top;
@@ -55,6 +63,7 @@ function updateTitle() {
 subscribe(({ rebuild: which, title }) => {
   if (title) updateTitle();
   if (which) rebuild(which);
+  if (which === true || which === 'tracks' || which === 'disc') markTrackRows();
   if (which === true) $('template-select').value = store.state.templateId;
   updateTracksSummary();
   schedule();
@@ -69,6 +78,10 @@ $('tabs').addEventListener('click', (e) => {
 export function showTab(name) {
   for (const b of $('tabs').querySelectorAll('button')) b.classList.toggle('active', b.dataset.tab === name);
   for (const n of Object.keys(panels)) $(`tab-${n}`).hidden = n !== name;
+  if (name === 'gallery' && galleryStale) {
+    galleryStale = false;
+    panels.gallery();
+  }
 }
 
 // Selector de plantilla de la barra superior.
@@ -185,10 +198,65 @@ document.addEventListener('keydown', (e) => {
   if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); } else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
 });
 
+/** Lleva a la pestaña «Canciones» y enfoca la versión abreviada de esa canción. */
+function editTrack(index) {
+  showTab('tracks');
+  const row = document.querySelectorAll('.track-row')[index];
+  if (!row) return;
+  row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  row.classList.add('flash');
+  setTimeout(() => row.classList.remove('flash'), 1400);
+  (row.querySelector('.short') || row.querySelector('.title'))?.focus();
+}
+
+// Arrastrar y soltar: imágenes -> stickers, .cue -> canciones, .cdbook -> proyecto.
+function setupDrop() {
+  const overlay = $('drop-overlay');
+  let depth = 0;
+  const hasFiles = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
+  window.addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; depth += 1; overlay.hidden = false; });
+  window.addEventListener('dragleave', () => { depth = Math.max(0, depth - 1); if (!depth) overlay.hidden = true; });
+  window.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+  window.addEventListener('drop', async (e) => {
+    if (!hasFiles(e)) return;
+    e.preventDefault();
+    depth = 0;
+    overlay.hidden = true;
+    const files = [...e.dataTransfer.files];
+    const ext = (f) => f.name.toLowerCase().split('.').pop();
+    const project = files.find((f) => ext(f) === 'cdbook');
+    if (project) {
+      if (confirmDiscard()) await openFromData(await project.text(), window.api.pathForFile(project) || project.name);
+      return;
+    }
+    const cue = files.find((f) => ext(f) === 'cue');
+    if (cue) {
+      const res = await window.api.readCue(window.api.pathForFile(cue));
+      importCueResult(res || { text: await cue.text(), durations: {} });
+      showTab('tracks');
+      return;
+    }
+    const images = files.filter((f) => f.type.startsWith('image/'));
+    if (images.length) {
+      const read = await Promise.all(images.map((f) => new Promise((res) => {
+        const r = new FileReader();
+        r.onload = () => res({ name: f.name, url: r.result });
+        r.onerror = () => res(null);
+        r.readAsDataURL(f);
+      })));
+      await addStickerFiles(read.filter(Boolean));
+      showTab('images');
+      return;
+    }
+    toast('Suelta imágenes (stickers), un .cue o un proyecto .cdbook.', 'warn');
+  });
+}
+
 // ---------------------------------------------------------------- inicio
 
 async function start() {
-  initPreview({ selectionChanged: () => rebuild('images') });
+  initPreview({ selectionChanged: () => rebuild('images'), editTrack });
+  setupDrop();
   await refreshUserTemplates().catch(() => {});
   const initial = await window.api.initialFile();
   if (initial) {

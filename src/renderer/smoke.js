@@ -11,6 +11,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export async function runSmoke({ commands, showTab }) {
   const report = { steps: [], errors: [] };
+  window.confirm = () => true; // sin diálogos bloqueantes durante la prueba
   window.addEventListener('error', (e) => {
     // Aviso benigno de Chromium al redimensionar.
     if (!/ResizeObserver loop/.test(e.message)) report.errors.push(String(e.message));
@@ -72,7 +73,9 @@ export async function runSmoke({ commands, showTab }) {
   });
   // Plantillas nuevas: captura y PNG de cada una, con un estilo incluido.
   commit((s) => { s.booklet.enabled = false; s.images.stickers = []; s.colorByGroup = false; }, { rebuild: true });
-  for (const id of ['two-columns', 'setlist', 'lineup', 'terminal', 'notes', 'coquette', 'acid', 'book-index', 'playlist']) {
+  const only = (await window.api.smokeOnly?.()) || null;
+  const ids = ['two-columns', 'setlist', 'lineup', 'terminal', 'notes', 'coquette', 'acid', 'book-index', 'playlist', 'y2k', 'vinyl', 'cassette', 'polaroid'];
+  for (const id of only || ids) {
     await step(`09-${id}`, () => { switchTemplate(id); showTab('design'); });
     report[`overflow-${id}`] = lastAnalysis;
     await exp('png', `plantilla-${id}`);
@@ -83,6 +86,27 @@ export async function runSmoke({ commands, showTab }) {
     report[`overflow-${id}-preset`] = lastAnalysis;
     await exp('png', `plantilla-${id}-${preset.name}`);
   }
+  await step('10-galeria', async () => { showTab('gallery'); await wait(1500); });
+  // Arrastrar y soltar: un .cue (sustituye la lista) y una imagen (sticker).
+  const drop = (files) => {
+    const dt = new DataTransfer();
+    for (const f of files) dt.items.add(f);
+    window.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
+  };
+  await step('11-soltar-cue', async () => {
+    drop([new File(['PERFORMER "Prueba"\nTITLE "Cue"\nFILE "x.wav" WAVE\n  TRACK 01 AUDIO\n    TITLE "Uno"\n    INDEX 01 00:00:00\n  TRACK 02 AUDIO\n    TITLE "Dos"\n    INDEX 01 03:00:00\n'], 'disco.cue')]);
+    await wait(800);
+  });
+  report.dropCue = store.state.tracks.map((t) => `${t.title} ${t.duration}`);
+  const stickersBefore = store.state.images.stickers.length;
+  await step('12-soltar-imagen', async () => {
+    const [, b64] = drawCover().split(',');
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: 'image/jpeg' });
+    drop([new File([blob], 'foto.jpg', { type: 'image/jpeg' })]);
+    await wait(1200);
+  });
+  report.dropImage = store.state.images.stickers.length - stickersBefore;
   // Plantillas propias: guardar, listar y borrar.
   const name = `Prueba ${Date.now()}`;
   const file = await window.api.saveTemplate({ name, templateId: store.state.templateId, style: currentStyle(store.state), customFonts: [] });

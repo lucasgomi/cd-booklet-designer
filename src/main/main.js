@@ -210,6 +210,8 @@ ipcMain.handle('app:set-dirty', (_e, value) => { dirty = !!value; });
 ipcMain.handle('app:set-title', (_e, title) => mainWindow?.setTitle(title));
 ipcMain.handle('app:close-now', () => { forceClose = true; mainWindow?.close(); });
 ipcMain.handle('app:smoke-dir', () => SMOKE_DIR);
+// Para iterar rápido: CDBOOK_SMOKE_ONLY=vinyl,cassette npm run smoke
+ipcMain.handle('app:smoke-only', () => (SMOKE_DIR && process.env.CDBOOK_SMOKE_ONLY ? process.env.CDBOOK_SMOKE_ONLY.split(',') : null));
 ipcMain.handle('app:initial-file', () => {
   const arg = process.argv.slice(1).find((a) => a.toLowerCase().endsWith('.cdbook') && fs.existsSync(a));
   return arg ? { path: arg, data: fs.readFileSync(arg, 'utf8') } : null;
@@ -244,16 +246,21 @@ ipcMain.handle('cue:open', async () => {
     properties: ['openFile'],
   });
   if (res.canceled || !res.filePaths[0]) return null;
-  const file = res.filePaths[0];
+  return readCue(res.filePaths[0]);
+});
+
+ipcMain.handle('cue:read', (_e, file) => (file && file.toLowerCase().endsWith('.cue') && fs.existsSync(file) ? readCue(file) : null));
+
+/** Lee un .cue y la duración de los audios a los que apunta (para la última pista). */
+function readCue(file) {
   const text = readTextAuto(file);
-  // Duración de los archivos de audio referenciados (para la última pista).
   const durations = {};
   for (const m of text.matchAll(/^\s*FILE\s+"?(.+?)"?\s+\S+\s*$/gim)) {
     const name = m[1];
     durations[name] = audioDuration(path.resolve(path.dirname(file), name));
   }
   return { path: file, text, durations };
-});
+}
 
 ipcMain.handle('export:pdf', async (_e, payload) => {
   const file = await askSavePath('Exportar PDF', `${safeName(payload.suggestedName) || 'librito'}.pdf`,

@@ -41,7 +41,9 @@ veas cómo funciona.
 - Grupos: activa *Colorear los números según el grupo* y elige un color
   para cada grupo (por ejemplo, el álbum de origen).
 
-**Plantillas** (pestaña *Diseño*)
+**Plantillas** (pestaña *Plantilla*: galería con miniaturas en vivo hechas
+con tus datos, estilos de un clic y botón «Sorpréndeme»; los ajustes finos
+están en *Diseño*)
 1. **Cabecera + lista**: cabecera con imagen de fondo, título y línea de
    datos. Debajo, la lista en una columna con filas alternas resaltadas y
    barra vertical opcional.
@@ -73,6 +75,18 @@ Estética *white girl music*:
 11. **Playlist**: pantalla de playlist con portada, botón de reproducir y
     canciones. Si rellenas el campo «Grupo» de cada canción (por ejemplo,
     con el artista), aparece junto al título.
+
+Objetos dibujados:
+
+12. **Y2K holográfico** (en *white girl music*): fondo iridiscente con
+    destellos, título cromado y la lista en un panel de cristal con números
+    en burbujas.
+13. **Vinilo**: la funda con el vinilo asomando (surcos, brillo y etiqueta) y
+    la lista en Cara A / Cara B.
+14. **Casete**: una cinta con la etiqueta escrita a mano, bobinas y ventana, y
+    la lista por caras.
+15. **Polaroid**: página de álbum de recortes, con una polaroid de tu foto,
+    cinta washi, dibujitos y la lista en una hoja de cuaderno arrancada.
 
 Cada plantilla trae **estilos incluidos**: combinaciones de colores y
 letras que se aplican con un clic y se deshacen con Ctrl+Z.
@@ -118,6 +132,11 @@ discos. También se pueden exportar e importar como archivo
   El texto queda vectorial y las fuentes van incrustadas.
 - **Exportar PNG**: 300 ppp (1417 × 1417 o 2835 × 1417 px).
 - ⚠ **Imprime al 100 % / tamaño real.** Nunca uses «Ajustar a la página».
+
+**Arrastrar y soltar**
+- Imágenes sobre la ventana: se añaden como stickers.
+- Un `.cue`: importa las canciones.
+- Un `.cdbook`: abre el proyecto.
 
 **Guardado**
 - Los proyectos `.cdbook` guardan los datos, los ajustes y las imágenes en

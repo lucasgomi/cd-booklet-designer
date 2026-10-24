@@ -14,6 +14,11 @@ function thumb(url) {
 
 export async function addStickers() {
   const files = await pickImages({ multiple: true, accept: 'image/png,image/webp,image/gif,image/*' });
+  await addStickerFiles(files);
+}
+
+/** files: [{ name, url }] con data URLs. */
+export async function addStickerFiles(files) {
   if (!files.length) return;
   const added = [];
   for (const f of files) {

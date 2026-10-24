@@ -18,9 +18,13 @@ import coquette from './coquette.js';
 import acid from './acid.js';
 import bookIndex from './book-index.js';
 import playlist from './playlist.js';
+import vinyl from './vinyl.js';
+import cassette from './cassette.js';
+import polaroid from './polaroid.js';
+import y2k from './y2k.js';
 
 // `category` (opcional) agrupa las plantillas en la interfaz.
-export const TEMPLATES = [headerList, ticket, twoColumns, setlist, lineup, terminal, notes, coquette, acid, bookIndex, playlist];
+export const TEMPLATES = [headerList, ticket, twoColumns, setlist, lineup, terminal, notes, coquette, acid, bookIndex, playlist, y2k, vinyl, cassette, polaroid];
 
 export function templateCategories() {
   const groups = new Map();

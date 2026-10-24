@@ -41,12 +41,14 @@
       <nav class="tabs" id="tabs">
         <button data-tab="disc" class="active">Disco</button>
         <button data-tab="tracks">Canciones</button>
+        <button data-tab="gallery">Plantilla</button>
         <button data-tab="design">Diseño</button>
         <button data-tab="images">Imágenes</button>
         <button data-tab="booklet">Librito</button>
       </nav>
       <div class="tab-body" id="tab-disc"></div>
       <div class="tab-body" id="tab-tracks" hidden></div>
+      <div class="tab-body" id="tab-gallery" hidden></div>
       <div class="tab-body" id="tab-design" hidden></div>
       <div class="tab-body" id="tab-images" hidden></div>
       <div class="tab-body" id="tab-booklet" hidden></div>
@@ -70,6 +72,9 @@
   </main>
 
   <div class="toast" id="toast" hidden></div>
+  <div class="drop-overlay" id="drop-overlay" hidden>
+    <div>Suelta aquí<br><small>imágenes → stickers · .cue → canciones · .cdbook → abrir proyecto</small></div>
+  </div>
 
   <dialog id="dlg-paste">
     <form method="dialog">

@@ -21,10 +21,12 @@ let autoFit = true;
 let lastWidth = null;
 let pending = false;
 let onSelectionChange = () => {};
+let onEditTrack = () => {};
 export let lastAnalysis = { overflow: [], vertical: false };
 
-export function initPreview({ selectionChanged }) {
+export function initPreview({ selectionChanged, editTrack }) {
   onSelectionChange = selectionChanged;
+  onEditTrack = editTrack || onEditTrack;
   safeToggle.addEventListener('change', () => schedule());
   new ResizeObserver(() => { if (autoFit) fit(); }).observe(canvas);
   host.addEventListener('pointerdown', onPointerDown);
@@ -187,7 +189,8 @@ function renderWarnings() {
   for (const o of lastAnalysis.overflow) {
     const t = state.tracks[o.index];
     if (!t) continue;
-    const msg = h('span', {}, `El título ${o.index + 1} «${o.title}» no cabe. `);
+    const msg = h('span', {}, h('a', { class: 'warn-link', text: `El título ${o.index + 1} «${o.title}»`, title: 'Ir a esta canción', href: '#' }), ' no cabe. ');
+    msg.firstChild.addEventListener('click', (e) => { e.preventDefault(); onEditTrack(o.index); });
     if (o.suggestion) {
       msg.append('Propuesta: ', h('b', { text: `«${o.suggestion}»` }));
       items.push(h('div', { class: 'warning' }, msg, button('Usar abreviatura', () => {
@@ -211,4 +214,15 @@ function renderWarnings() {
   }
   warningsEl.replaceChildren(...items);
   warningsEl.hidden = !items.length;
+  markTrackRows();
+}
+
+/** Señala en la pestaña «Canciones» las filas cuyo título no cabe. */
+export function markTrackRows() {
+  const bad = new Map(lastAnalysis.overflow.map((o) => [store.state.tracks[o.index]?.id, o]));
+  for (const row of document.querySelectorAll('.track-row')) {
+    const o = bad.get(row.dataset.id);
+    row.classList.toggle('overflow', !!o);
+    row.title = o ? `No cabe en el diseño${o.suggestion ? `. Propuesta: «${o.suggestion}»` : ''}` : '';
+  }
 }
