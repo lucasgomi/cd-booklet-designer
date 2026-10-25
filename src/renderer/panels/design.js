@@ -156,6 +156,9 @@ export function renderDesignPanel(root) {
   root.appendChild(h('div', { class: 'design-head' },
     h('div', {}, h('small', { class: 'muted', text: 'Ajustando la plantilla' }), h('b', { text: tpl.name })),
     button('Cambiar plantilla o estilo…', () => document.querySelector('#tabs [data-tab="gallery"]').click())));
+  root.appendChild(h('div', { class: 'fit-toggle' },
+    toggle(store.state.autoFit !== false, (v) => commit((s) => { s.autoFit = v; }), 'Ajustar la letra de la lista si no cabe'),
+    h('small', { class: 'help', text: 'Con discos largos, reduce la letra de toda la lista por igual (hasta el 55 %) para que quepan todas las canciones. El tamaño que elijas abajo es el máximo.' })));
   root.appendChild(userTemplatesSection());
   for (const sec of tpl.controls) {
     root.appendChild(collapsible(sec.section, sec.items.map((it) => control(it, style)).filter(Boolean)));

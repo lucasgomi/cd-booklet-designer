@@ -9,7 +9,7 @@ import { renderDesignPanel, refreshUserTemplates, switchTemplate } from './panel
 import { renderImagesPanel, setSelectedSticker, addStickerFiles } from './panels/images.js';
 import { renderBookletPanel } from './panels/booklet.js';
 import { renderGalleryPanel } from './panels/gallery.js';
-import { initPreview, schedule, fit, zoomIn, zoomOut, toggleSafe, markTrackRows } from './preview.js';
+import { initPreview, schedule, fit, zoomIn, zoomOut, toggleSafe, markTrackRows, fitScale, fitCols } from './preview.js';
 import { exampleProject } from './example.js';
 import { toast } from './ui.js';
 
@@ -134,7 +134,7 @@ async function save(saveAs = false) {
 }
 
 function exportPayload() {
-  return { state: store.state, assets: usedAssets(), suggestedName: suggestedName() };
+  return { state: store.state, assets: usedAssets(), suggestedName: suggestedName(), fitScale, fitCols };
 }
 
 async function exportPdf() {

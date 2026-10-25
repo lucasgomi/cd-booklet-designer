@@ -225,6 +225,7 @@ ipcMain.handle('shell:external', (_e, url) => {
 });
 ipcMain.handle('app:smoke-dir', () => SMOKE_DIR);
 // Para iterar rápido: CDBOOK_SMOKE_ONLY=vinyl,cassette npm run smoke
+ipcMain.handle('app:smoke-long', () => (SMOKE_DIR && process.env.CDBOOK_SMOKE_LONG ? Number(process.env.CDBOOK_SMOKE_LONG) : 0));
 ipcMain.handle('app:smoke-only', () => (SMOKE_DIR && process.env.CDBOOK_SMOKE_ONLY ? process.env.CDBOOK_SMOKE_ONLY.split(',') : null));
 ipcMain.handle('app:initial-file', () => {
   const arg = process.argv.slice(1).find((a) => a.toLowerCase().endsWith('.cdbook') && fs.existsSync(a));

@@ -152,16 +152,84 @@ export function analyzeSheet(sheet) {
     el.textContent = original;
     overflow.push({ index: Number(el.dataset.trackIndex), title: fullTitle, suggestion });
   }
-  let vertical = false;
-  // La lista no cabe si la última fila acaba por debajo de su contenedor.
+  return { overflow, vertical: verticalOverflow(sheet) };
+}
+
+/** ¿Alguna lista se sale por abajo? (la última fila acaba bajo su contenedor) */
+export function verticalOverflow(sheet) {
   for (const el of sheet.querySelectorAll('.fit-v')) {
     const last = el.lastElementChild;
     if (!last) continue;
     // Medidas de maquetación (no de pantalla): funcionan aunque la hoja esté girada o escalada.
     const top = last.offsetParent === el ? last.offsetTop : last.offsetTop - el.offsetTop;
-    if (top + last.offsetHeight > el.clientHeight + 1) vertical = true; // 1 px de tolerancia por redondeos
+    if (top + last.offsetHeight > el.clientHeight + 1) return true; // 1 px de tolerancia por redondeos
   }
-  return { overflow, vertical };
+  return false;
+}
+
+// ------------------------------------------------------- ajuste automático
+
+/** Escala mínima de la letra de la lista al ajustar (55 % del tamaño elegido). */
+export const FIT_MIN_SCALE = 0.55;
+
+/** Copia del estado con la letra (y la altura fija de fila) de la lista
+ * escalada y, opcionalmente, el número de columnas decidido. */
+export function scaledState(state, scale = 1, cols = undefined) {
+  if ((!scale || scale === 1) && !cols) return state;
+  const style = currentStyle(state);
+  const next = { ...style, listSize: +(style.listSize * (scale || 1)).toFixed(3) };
+  if (typeof style.rowHeight === 'number') next.rowHeight = +(style.rowHeight * (scale || 1)).toFixed(3);
+  if (cols) next._cols = cols;
+  return { ...state, styles: { ...state.styles, [state.templateId]: next } };
+}
+
+/** Por debajo de esta escala, una plantilla con columnas automáticas prueba a usar dos. */
+export const COLUMN_SWITCH_SCALE = 0.7;
+
+function templateHasColumns(id) {
+  return !!getTemplate(id)?.controls?.some((sec) => sec.items.some((it) => it.key === 'columns'));
+}
+
+/**
+ * Pinta la hoja ajustándola para que quepa la lista:
+ *  1. reduce la letra de toda la lista por igual (nunca sólo una fila) hasta
+ *     el tamaño más grande que quepa, con un mínimo de FIT_MIN_SCALE;
+ *  2. en plantillas con columnas en «Automático», si con una columna la letra
+ *     bajaría de COLUMN_SWITCH_SCALE (o no cabría), prueba con dos.
+ * mount(sheet) debe insertar la hoja en el DOM (para poder medirla).
+ * Devuelve { sheet, scale, cols, fits }.
+ */
+export function renderFitted(state, assets, opts, mount) {
+  const at = (scale, cols) => {
+    const sheet = renderSheet(scaledState(state, scale, cols), assets, opts);
+    mount(sheet);
+    return { sheet, scale, cols, fits: !verticalOverflow(sheet) };
+  };
+  const autoCols = currentStyle(state).columns === 'auto' && templateHasColumns(state.templateId);
+  if (state.autoFit === false || !state.tracks.length) return at(1, autoCols ? 1 : undefined);
+
+  const search = (cols) => {
+    const full = at(1, cols);
+    if (full.fits) return full;
+    const low = at(FIT_MIN_SCALE, cols);
+    if (!low.fits) return low;
+    let lo = FIT_MIN_SCALE;
+    let hi = 1;
+    for (let i = 0; i < 7; i += 1) {
+      const mid = (lo + hi) / 2;
+      if (at(mid, cols).fits) lo = mid; else hi = mid;
+    }
+    // 3 % de holgura: el PNG a 300 ppp redondea las alturas de otra forma.
+    return { scale: Math.max(FIT_MIN_SCALE, Math.floor(lo * 0.97 * 1000) / 1000), cols, fits: true };
+  };
+
+  let best = search(autoCols ? 1 : undefined);
+  if (autoCols && (!best.fits || best.scale < COLUMN_SWITCH_SCALE)) {
+    const two = search(2);
+    if (two.fits && (!best.fits || two.scale > best.scale)) best = two;
+  }
+  const final = at(best.scale, best.cols);
+  return final.fits || !best.fits ? final : at(Math.min(1, best.scale / 0.97), best.cols);
 }
 
 /** Espera a que fuentes e imágenes estén listas (para exportar). */

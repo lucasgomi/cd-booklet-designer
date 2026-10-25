@@ -2,7 +2,7 @@
 // nombre enorme, botón de reproducir y la lista de canciones.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -55,6 +55,7 @@ export default {
     coverSize: 27,
     autoRowHeight: true,
     rowHeight: 2.6,
+    columns: 'auto',
   },
 
   presets: [
@@ -96,6 +97,7 @@ export default {
       { key: 'coverSize', label: 'Tamaño de la portada', type: 'number', min: 15, max: 50, step: 0.5, unit: 'mm' },
       { key: 'autoRowHeight', label: 'Altura de fila automática', type: 'toggle' },
       { key: 'rowHeight', label: 'Altura de fila', type: 'number', min: 1.8, max: 8, step: 0.1, unit: 'mm', when: (s) => !s.autoRowHeight },
+      COLUMNS_CONTROL,
     ] },
   ],
 
@@ -161,6 +163,6 @@ export default {
     return h('div', {
       style: { position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${s.topColor} 0, ${rgba(s.topColor, 0.55)} 30mm, ${s.bgColor} 62mm)`, backgroundColor: s.bgColor },
     }, h('div', { style: { position: 'absolute', inset: `${s.margin}mm`, display: 'flex', flexDirection: 'column' } },
-      head, controls, headerRow, list));
+      head, controls, listColumns(s) > 1 ? null : headerRow, columnize(list, listColumns(s))));
   },
 };

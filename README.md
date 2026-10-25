@@ -139,6 +139,21 @@ discos. También se pueden exportar e importar como archivo
 - Las duraciones usan cifras de ancho fijo para que queden alineadas.
 - Avisa si la lista no cabe en la página.
 
+**Discos largos** (ajuste automático, en *Diseño*)
+- Si la lista no cabe, la letra de **toda** la lista se reduce por igual
+  (nunca una sola fila) hasta el tamaño más grande que quepa, con un mínimo
+  del 55 %. El tamaño que eliges es el máximo. Se puede desactivar.
+- Las plantillas de una columna (Cabecera + lista, Ticket, Notas, Coquette,
+  Índice, Playlist, Setlist, Terminal, Carta) tienen **columnas en
+  «Automático»**: si con una columna la letra tuviera que bajar del 70 %,
+  pasan solas a dos.
+- Capacidad comprobada con la prueba automática: con 45 canciones caben en
+  las 25 plantillas; con 60, en todas salvo Vinilo y Polaroid; con 80, en
+  todas salvo Vinilo, Casete, Polaroid y Art déco, porque el dibujo ocupa
+  media página. Si no caben, la app lo avisa y sugiere plantillas de varias
+  columnas.
+- El PDF y el PNG usan exactamente el mismo ajuste que ves en pantalla.
+
 **Librito completo e impresión** (pestaña *Librito*)
 - Modo librito: monta la portada (120 × 120 mm) junto a la lista en una
   hoja de 240 × 120 mm.

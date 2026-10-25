@@ -36,6 +36,7 @@ export function defaultState() {
       stickers: [],           // { id, asset, x, y, w, rot, shadow, flip }
     },
     booklet: { enabled: false, coverSide: 'right' },
+    autoFit: true,          // reducir la letra de la lista si no cabe
     customFonts: [],          // familias de Google Fonts cargadas en línea
   };
 }

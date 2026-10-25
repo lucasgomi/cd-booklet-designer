@@ -307,3 +307,5 @@ dialog textarea { font-family: 'JetBrains Mono', Consolas, monospace; font-size:
 .update-bar.error { background: #3a1f1f; border-color: #5a2f2f; color: #f3d0d0; }
 .update-bar .spacer { flex: 1; }
 .update-bar progress { width: 140px; accent-color: var(--ok); }
+.warning.info { color: #8fb4ff; }
+.fit-toggle { padding: 10px 0; border-bottom: 1px solid var(--line); }

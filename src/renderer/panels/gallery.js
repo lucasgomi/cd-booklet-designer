@@ -2,7 +2,7 @@
 // todas las plantillas y de los estilos incluidos de la actual.
 import { store, commit } from '../store.js';
 import { h, section, button, toast } from '../ui.js';
-import { renderSheet, mountSheet } from '../../shared/render.js';
+import { renderFitted, mountSheet } from '../../shared/render.js';
 import { TEMPLATES, getTemplate, templateCategories } from '../../shared/templates/index.js';
 import { currentStyle, PANEL_MM } from '../../shared/model.js';
 import { switchTemplate } from './design.js';
@@ -39,7 +39,7 @@ function fill(box) {
   inner = h('div', { class: 'thumb-inner', style: { transform: `scale(${scale})` } });
   box.replaceChildren(inner);
   try {
-    mountSheet(inner, renderSheet(st, store.assets, { editor: false }));
+    renderFitted(st, store.assets, { editor: false }, (sheet) => mountSheet(inner, sheet));
   } catch (err) {
     box.replaceChildren(h('span', { class: 'muted', text: 'Sin vista previa' }));
     console.warn(err);

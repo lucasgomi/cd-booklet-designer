@@ -3,7 +3,7 @@
 // una columna con filas alternas resaltadas y barra lateral opcional.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, splitColumns, fitList } from './common.js';
 
 export default {
   id: 'header-list',
@@ -50,6 +50,7 @@ export default {
     marginBottom: 7,
     autoRowHeight: true,
     rowHeight: 3.2,
+    columns: 'auto',
     sidebarWidth: 1.2,
   },
 
@@ -117,6 +118,7 @@ export default {
       { key: 'marginBottom', label: 'Margen inferior', type: 'number', min: 0, max: 30, step: 0.5, unit: 'mm' },
       { key: 'autoRowHeight', label: 'Altura de fila automática', type: 'toggle' },
       { key: 'rowHeight', label: 'Altura de fila', type: 'number', min: 2, max: 10, step: 0.1, unit: 'mm', when: (s) => !s.autoRowHeight },
+      COLUMNS_CONTROL,
     ] },
   ],
 
@@ -173,14 +175,12 @@ export default {
     const digits = String(tracks.length).length;
     const rowH = s.autoRowHeight ? null : s.rowHeight;
 
-    const rows = h('div', {
-      class: 'fit-v',
-      style: {
-        position: 'absolute', left: `${s.marginX + sideW + gap}mm`, right: `${s.marginX}mm`,
-        top: `${listTop}mm`, bottom: `${s.marginBottom}mm`,
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-      },
-    });
+    const cols = listColumns(s);
+    const area = {
+      position: 'absolute', left: `${s.marginX + sideW + gap}mm`, right: `${s.marginX}mm`,
+      top: `${listTop}mm`, bottom: `${s.marginBottom}mm`,
+    };
+    const rowEls = [];
     const listFont = { fontFamily: fontStack(s.listFont), fontSize: `${s.listSize}pt`, fontVariantNumeric: 'tabular-nums' };
     // Altura máxima de fila en modo automático: no más de 2,2 veces la letra.
     const maxAuto = `${(s.listSize * 0.3528 * 2.2).toFixed(2)}mm`;
@@ -193,7 +193,7 @@ export default {
           color: s.trackTitleColor, fontWeight: s.listWeight, paddingRight: '2mm', lineHeight: 1.4,
         },
       });
-      rows.appendChild(h('div', {
+      rowEls.push(h('div', {
         style: {
           ...listFont, display: 'flex', alignItems: 'center', minHeight: `${(s.listSize * 0.3528 * 1.05).toFixed(2)}mm`,
           flex: rowH ? `0 0 ${rowH}mm` : '1 1 0', maxHeight: rowH ? 'none' : maxAuto,
@@ -213,6 +213,12 @@ export default {
       h('div', { text: t.duration, style: { flex: 'none', color: s.durationColor, fontWeight: s.listWeight } })));
     });
 
+    // Una columna: el contenedor es la propia lista. Dos: dos listas en fila.
+    const columnEls = cols > 1 ? splitColumns(rowEls, cols).map((part) => fitList(part)) : [];
+    const rows = cols > 1
+      ? h('div', { style: { ...area, display: 'flex', gap: '4mm' } }, ...columnEls)
+      : h('div', { class: 'fit-v', style: { ...area, display: 'flex', flexDirection: 'column', overflow: 'hidden' } }, ...rowEls);
+
     const panel = h('div', {
       style: { position: 'absolute', inset: 0, background: s.bgColor },
     }, header, rows);
@@ -229,9 +235,9 @@ export default {
       panel.appendChild(bar);
       // Tras montar, recorta la barra al alto ocupado por las filas.
       ctx.afterMount.push(() => {
-        const last = rows.lastElementChild;
-        if (!last) return;
-        const used = Math.min(rows.clientHeight, last.offsetTop + last.offsetHeight);
+        const lasts = cols > 1 ? columnEls.map((c) => c.lastElementChild).filter(Boolean) : [rows.lastElementChild].filter(Boolean);
+        if (!lasts.length) return;
+        const used = Math.min(rows.clientHeight, Math.max(...lasts.map((l) => l.offsetTop + l.offsetHeight)));
         bar.style.height = `${used}px`;
       });
     }

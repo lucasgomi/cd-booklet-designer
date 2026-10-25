@@ -3,7 +3,7 @@
 // como un listado de archivos y un cursor al final.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, stripAccents, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
 
 export default {
   id: 'terminal',
@@ -33,6 +33,7 @@ export default {
     margin: 7,
     autoRowHeight: true,
     rowHeight: 2.6,
+    columns: 'auto',
   },
 
   presets: [
@@ -72,6 +73,7 @@ export default {
       { key: 'margin', label: 'Márgenes', type: 'number', min: 3, max: 20, step: 0.5, unit: 'mm' },
       { key: 'autoRowHeight', label: 'Altura de fila automática', type: 'toggle' },
       { key: 'rowHeight', label: 'Altura de fila', type: 'number', min: 1.5, max: 8, step: 0.1, unit: 'mm', when: (s) => !s.autoRowHeight },
+      COLUMNS_CONTROL,
     ] },
   ],
 
@@ -118,7 +120,7 @@ export default {
       }),
       info ? h('div', { text: info, style: { ...mono, marginTop: '1mm' } }) : null,
       h('div', { text: '═'.repeat(200), style: { ...dim, overflow: 'hidden', marginTop: '1.6mm', lineHeight: 1 } }),
-      list,
+      columnize(list, listColumns(s)),
       h('div', { text: '═'.repeat(200), style: { ...dim, overflow: 'hidden', lineHeight: 1 } }),
       h('div', { style: { ...mono, marginTop: '1.4mm', display: 'flex', alignItems: 'center', gap: '1ch' } },
         h('span', { text: footer }),

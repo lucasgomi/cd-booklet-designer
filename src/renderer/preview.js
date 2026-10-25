@@ -1,6 +1,6 @@
 // Vista previa en vivo, zoom, edición de stickers con el ratón y avisos.
 import { store, commit } from './store.js';
-import { renderSheet, mountSheet, analyzeSheet, h } from '../shared/render.js';
+import { renderFitted, mountSheet, analyzeSheet, FIT_MIN_SCALE, h } from '../shared/render.js';
 import { sheetWidth, PANEL_MM, currentStyle } from '../shared/model.js';
 import { totalSeconds, formatTotal, CD_LIMIT_SECONDS } from '../shared/time.js';
 import { getSelectedSticker, setSelectedSticker } from './panels/images.js';
@@ -23,6 +23,10 @@ let pending = false;
 let onSelectionChange = () => {};
 let onEditTrack = () => {};
 export let lastAnalysis = { overflow: [], vertical: false };
+/** Escala aplicada por el ajuste automático (1 = tamaño elegido). */
+export let fitScale = 1;
+/** Columnas decididas por el ajuste automático (undefined = las de la plantilla). */
+export let fitCols;
 
 export function initPreview({ selectionChanged, editTrack }) {
   onSelectionChange = selectionChanged;
@@ -59,8 +63,10 @@ export function schedule() {
 
 function render() {
   const { state, assets } = store;
-  const sheet = renderSheet(state, assets, { editor: true, showSafe: safeToggle.checked, selectedSticker: getSelectedSticker() });
-  mountSheet(host, sheet);
+  const fitted = renderFitted(state, assets, { editor: true, showSafe: safeToggle.checked, selectedSticker: getSelectedSticker() }, (s) => mountSheet(host, s));
+  const { sheet } = fitted;
+  fitScale = fitted.scale;
+  fitCols = fitted.cols;
   const W = sheetWidth(state);
   sizeLabel.textContent = `Hoja ${W} × ${PANEL_MM} mm${state.booklet.enabled ? ' (librito)' : ''}`;
   if (W !== lastWidth) { lastWidth = W; autoFit = true; }
@@ -183,7 +189,14 @@ function renderWarnings() {
   const missing = state.tracks.filter((t) => t.duration == null).length;
   if (missing) items.push(h('div', { class: 'warning' }, `${missing} ${missing === 1 ? 'canción no tiene' : 'canciones no tienen'} duración.`));
   if (lastAnalysis.vertical) {
-    items.push(h('div', { class: 'warning bad' }, '⚠ La lista no cabe en la página: reduce el tamaño de letra o la altura de fila, o los márgenes.'));
+    items.push(h('div', { class: 'warning bad' }, state.autoFit === false
+      ? '⚠ La lista no cabe en la página: activa «Ajustar la letra si no cabe» (Diseño), o reduce el tamaño de letra, la altura de fila o los márgenes.'
+      : `⚠ No caben ${state.tracks.length} canciones ni con la letra al ${Math.round(FIT_MIN_SCALE * 100)} %: prueba una plantilla de dos o tres columnas (Dos columnas, Periódico, Ticket…), reduce márgenes o reparte el disco en dos libritos.`));
+  } else if (fitScale < 1 || fitCols > 1 && currentStyle(state).columns === 'auto') {
+    const parts = [];
+    if (fitCols > 1 && currentStyle(state).columns === 'auto') parts.push('la lista se ha repartido en dos columnas');
+    if (fitScale < 1) parts.push(`la letra de la lista se ha reducido al ${Math.round(fitScale * 100)} % (igual en todas las filas)`);
+    items.push(h('div', { class: 'warning info' }, `ℹ Para que quepan las ${state.tracks.length} canciones, ${parts.join(' y ')}. Se puede cambiar en «Diseño».`));
   }
   const style = currentStyle(state);
   for (const o of lastAnalysis.overflow) {

@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('api', {
   openExternal: invoke('shell:external'),
   smokeDir: invoke('app:smoke-dir'),
   smokeOnly: invoke('app:smoke-only'),
+  smokeLong: invoke('app:smoke-long'),
   initialFile: invoke('app:initial-file'),
   openProject: invoke('project:open'),
   saveProject: invoke('project:save'),

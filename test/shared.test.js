@@ -123,3 +123,18 @@ test('comparación de versiones para las actualizaciones', () => {
   assert.equal(isNewer('v1.0.9', '1.1.0'), false);
   assert.equal(isNewer('2.0', '1.9.9'), true);
 });
+
+test('el ajuste automático escala la letra de la lista y fija columnas', async () => {
+  const { scaledState } = await import('../src/shared/render.js');
+  const { defaultState, currentStyle } = await import('../src/shared/model.js');
+  const { listColumns } = await import('../src/shared/templates/common.js');
+  const st = defaultState();
+  const base = currentStyle(st);
+  const half = currentStyle(scaledState(st, 0.5));
+  assert.equal(half.listSize, +(base.listSize * 0.5).toFixed(3));
+  assert.equal(half.rowHeight, +(base.rowHeight * 0.5).toFixed(3));
+  assert.equal(base.titleSize, half.titleSize); // sólo la lista
+  assert.equal(listColumns(currentStyle(scaledState(st, 1, 2))), 2);
+  assert.equal(listColumns(base), 1); // 'auto' sin decidir = una
+  assert.equal(scaledState(st, 1), st);
+});

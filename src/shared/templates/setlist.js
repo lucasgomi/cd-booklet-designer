@@ -3,7 +3,7 @@
 // trozos de cinta adhesiva, letras grandes y líneas de cuaderno.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, stripAccents, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
 
 export default {
   id: 'setlist',
@@ -39,6 +39,7 @@ export default {
     paperPad: 4.5,
     autoRowHeight: true,
     rowHeight: 3.4,
+    columns: 'auto',
   },
 
   presets: [
@@ -84,6 +85,7 @@ export default {
       { key: 'paperPad', label: 'Margen interior', type: 'number', min: 2, max: 15, step: 0.5, unit: 'mm' },
       { key: 'autoRowHeight', label: 'Altura de fila automática', type: 'toggle' },
       { key: 'rowHeight', label: 'Altura de fila', type: 'number', min: 2, max: 10, step: 0.1, unit: 'mm', when: (s) => !s.autoRowHeight },
+      COLUMNS_CONTROL,
     ] },
   ],
 
@@ -134,7 +136,7 @@ export default {
       style: { fontFamily: fontStack(s.titleFont), fontWeight: s.titleWeight, fontSize: `${s.titleSize}pt`, color: s.textColor, lineHeight: 0.98, textTransform: 'uppercase', textWrap: 'balance', flex: 'none', paddingLeft: `${indent}mm` },
     }),
     info ? h('div', { text: info.toUpperCase(), style: { ...small, margin: '1.4mm 0 2mm', flex: 'none', paddingLeft: `${indent}mm` } }) : null,
-    list,
+    columnize(list, listColumns(s)),
     footer ? h('div', { text: footer.toUpperCase(), style: { ...small, color: rgba(s.textColor, 0.7), marginTop: '1.6mm', textAlign: 'right', flex: 'none' } }) : null);
 
     const paper = h('div', {

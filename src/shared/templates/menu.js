@@ -2,7 +2,7 @@
 // principales y postres, con puntos hasta el «precio» (la duración).
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList } from './common.js';
+import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
 
 export default {
   id: 'menu',
@@ -28,6 +28,7 @@ export default {
     totalFormat: 'h-min-lower',
     autoRowHeight: true,
     rowHeight: 2.8,
+    columns: 'auto',
   },
 
   presets: [
@@ -57,7 +58,7 @@ export default {
       { key: 'priceStyle', label: 'Precio', type: 'select', options: [{ value: 'euro', label: '3,04 €' }, { value: 'time', label: '3:04' }] },
       ...TEXT_EXTRAS,
     ] },
-    { section: 'Espaciado', items: rowControls() },
+    { section: 'Espaciado', items: [...rowControls(), COLUMNS_CONTROL] },
   ],
 
   render(ctx) {
@@ -77,12 +78,12 @@ export default {
         h('div', { style: { flex: 1, height: '0.15mm', background: rgba(s.accentColor, 0.5) } }),
         h('div', { text: names[i] || '', style: { fontFamily: fontStack(s.sectionFont), fontWeight: s.sectionWeight, fontSize: `${s.sectionSize}pt`, color: s.accentColor, letterSpacing: '0.3em', textTransform: 'uppercase' } }),
         h('div', { style: { flex: 1, height: '0.15mm', background: rgba(s.accentColor, 0.5) } })));
-      blocks.push(fitList(part.map((t) => h('div', {
+      blocks.push(columnize(fitList(part.map((t) => h('div', {
         style: { ...serif, ...rowSizing(s, { minFactor: 1, maxFactor: 1.9 }), display: 'flex', alignItems: 'baseline' },
       },
       fitTitle(t, { flex: '0 1 auto', fontStyle: 'italic' }),
       h('span', { text: leader, style: { flex: '1 1 0', minWidth: '2ch', overflow: 'hidden', whiteSpace: 'pre', direction: 'rtl', color: s.leaderColor, margin: '0 1ch' } }),
-      h('span', { text: price(t.duration), style: { flex: 'none', fontVariantNumeric: 'tabular-nums lining-nums' } }))), { flex: `${part.length} 1 0` }));
+      h('span', { text: price(t.duration), style: { flex: 'none', fontVariantNumeric: 'tabular-nums lining-nums' } }))), { flex: `${part.length} 1 0` }), listColumns(s), '6mm'));
     }
 
     const footer = fillTemplate(s.footerText, values);

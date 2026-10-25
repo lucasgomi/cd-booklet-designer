@@ -70,3 +70,37 @@ export function hashSeed(text) {
   for (const ch of String(text)) x = Math.imul(x ^ ch.codePointAt(0), 16777619) >>> 0;
   return x || 1;
 }
+
+// ------------------------------------------------------------------
+// Columnas automáticas: las plantillas de una columna pasan a dos cuando
+// la lista es tan larga que la letra tendría que encogerse demasiado.
+
+export const COLUMNS_CONTROL = {
+  key: 'columns', label: 'Columnas de la lista', type: 'select',
+  options: [{ value: 'auto', label: 'Automático (dos si son muchas)' }, { value: 1, label: 'Una' }, { value: 2, label: 'Dos' }],
+};
+
+/** Número de columnas que debe pintar la plantilla. */
+export function listColumns(s) {
+  if (s._cols) return s._cols; // decidido por el ajuste automático
+  return Number(s.columns) === 2 ? 2 : 1;
+}
+
+/**
+ * Coloca las filas en una o varias columnas. Con una columna devuelve un
+ * único contenedor .fit-v; con más, una fila de contenedores .fit-v.
+ */
+export function columnsBox(rows, cols, { gap = '5mm', style = {}, columnStyle = {} } = {}) {
+  if (cols <= 1) return fitList(rows, { flex: '1 1 auto', ...style, ...columnStyle });
+  return h('div', { style: { flex: '1 1 auto', minHeight: 0, display: 'flex', gap, ...style } },
+    ...splitColumns(rows, cols).map((part) => fitList(part, columnStyle)));
+}
+
+/** Reparte en columnas una lista .fit-v ya construida (sin tocar sus filas). */
+export function columnize(list, cols, gap = '5mm') {
+  if (cols <= 1) return list;
+  const rows = [...list.children];
+  const box = h('div', { style: { flex: list.style.flex || '1 1 auto', minHeight: 0, display: 'flex', gap, margin: list.style.margin } });
+  for (const part of splitColumns(rows, cols)) box.appendChild(fitList(part));
+  return box;
+}

@@ -2,7 +2,7 @@
 // título caligráfico y la lista centrada en cursiva.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, toRoman, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -85,6 +85,7 @@ export default {
     cardInset: 6,
     autoRowHeight: true,
     rowHeight: 2.8,
+    columns: 'auto',
   },
 
   presets: [
@@ -131,6 +132,7 @@ export default {
       { key: 'cardInset', label: 'Margen de la tarjeta', type: 'number', min: 2, max: 20, step: 0.5, unit: 'mm' },
       { key: 'autoRowHeight', label: 'Altura de fila automática', type: 'toggle' },
       { key: 'rowHeight', label: 'Altura de fila', type: 'number', min: 2, max: 8, step: 0.1, unit: 'mm', when: (s) => !s.autoRowHeight },
+      COLUMNS_CONTROL,
     ] },
   ],
 
@@ -167,7 +169,7 @@ export default {
     }),
     info ? h('div', { text: info, style: { ...small, marginTop: '0.6mm' } }) : null,
     h('div', { text: `${ornament}  ${ornament}  ${ornament}`, style: { ...small, letterSpacing: '0.1em', color: s.accentColor, marginTop: '0.8mm' } }),
-    list,
+    columnize(list, listColumns(s)),
     footer ? h('div', { text: footer, style: { ...small, letterSpacing: '0.12em', textTransform: 'none', fontStyle: 'italic', fontSize: `${s.infoSize * 1.1}pt` } }) : null);
 
     // Tarjeta con borde festoneado (máscara de círculos) y perlas.

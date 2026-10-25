@@ -1,6 +1,6 @@
 // Página de exportación: monta la hoja a tamaño real (PDF A4 apaisado con
 // marcas de corte y doblez) o a 300 ppp (PNG, sólo la hoja).
-import { renderSheet, mountSheet, whenReady } from '../shared/render.js';
+import { renderSheet, mountSheet, whenReady, scaledState, verticalOverflow, FIT_MIN_SCALE } from '../shared/render.js';
 import { normalizeState, sheetWidth, PANEL_MM } from '../shared/model.js';
 import { loadCustomFonts } from '../shared/fonts.js';
 
@@ -48,14 +48,32 @@ async function main() {
   try {
     const state = normalizeState(payload.state);
     await loadCustomFonts(state.customFonts);
-    const sheet = renderSheet(state, payload.assets || {}, { editor: false });
+    // Misma escala que calculó el editor (ajuste automático), para que el PDF/PNG sea idéntico.
+    let scale = payload.fitScale || 1;
+    const cols = payload.fitCols;
+    let sheet = renderSheet(scaledState(state, scale, cols), payload.assets || {}, { editor: false });
     const W = sheetWidth(state);
+
+    // Comprobación final: si a este tamaño de página la lista se saliera
+    // (redondeos distintos al del editor), se reduce un poco más.
+    const refit = async (current, mount) => {
+      await whenReady(document.body); // medir con las tipografías ya cargadas
+      if (state.autoFit === false) return current;
+      let el = current;
+      while (verticalOverflow(el) && scale > FIT_MIN_SCALE) {
+        scale = Math.max(FIT_MIN_SCALE, scale - 0.02);
+        el = renderSheet(scaledState(state, scale, cols), payload.assets || {}, { editor: false });
+        mount(el);
+      }
+      return el;
+    };
 
     if (payload.mode === 'png') {
       document.body.className = 'png';
       // 1 mm CSS = 96/25,4 px; a 300 ppp hacen falta 300/25,4 px por mm.
       document.body.style.zoom = String((payload.dpi || 300) / 96);
       mountSheet(document.body, sheet);
+      sheet = await refit(sheet, (el) => mountSheet(document.body, el));
     } else {
       document.body.className = 'pdf';
       const x0 = (A4.w - W) / 2;
@@ -64,6 +82,10 @@ async function main() {
       sheet.style.left = `${x0}mm`;
       sheet.style.top = `${y0}mm`;
       mountSheet(document.body, sheet);
+      sheet = await refit(sheet, (el) => {
+        Object.assign(el.style, { position: 'absolute', left: `${x0}mm`, top: `${y0}mm` });
+        mountSheet(document.body, el);
+      });
       document.body.appendChild(marksSvg(x0, y0, W, PANEL_MM, state.booklet.enabled));
       const note = document.createElement('div');
       note.className = 'note';

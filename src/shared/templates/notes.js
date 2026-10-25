@@ -2,7 +2,7 @@
 // con barra superior, fecha y casillas de verificación.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -55,6 +55,7 @@ export default {
     margin: 7,
     autoRowHeight: true,
     rowHeight: 3,
+    columns: 'auto',
   },
 
   presets: [
@@ -94,6 +95,7 @@ export default {
       { key: 'margin', label: 'Márgenes', type: 'number', min: 3, max: 20, step: 0.5, unit: 'mm' },
       { key: 'autoRowHeight', label: 'Altura de fila automática', type: 'toggle' },
       { key: 'rowHeight', label: 'Altura de fila', type: 'number', min: 2, max: 10, step: 0.1, unit: 'mm', when: (s) => !s.autoRowHeight },
+      COLUMNS_CONTROL,
     ] },
   ],
 
@@ -169,7 +171,7 @@ export default {
           text: fillTemplate(s.titleText, values),
           style: { fontFamily: fontStack(s.titleFont), fontWeight: s.titleWeight, fontSize: `${s.titleSize}pt`, color: s.textColor, lineHeight: 1.1, letterSpacing: '-0.015em', flex: 'none', marginBottom: '2.5mm', textWrap: 'balance' },
         }),
-        list,
+        columnize(list, listColumns(s)),
         footer ? h('div', { text: footer, style: { ...body, color: s.dimColor, flex: 'none', marginTop: '2mm' } }) : null,
         bottomBar));
   },

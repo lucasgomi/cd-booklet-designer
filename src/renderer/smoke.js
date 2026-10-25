@@ -5,11 +5,49 @@ import { switchTemplate } from './panels/design.js';
 import { drawCover } from './example.js';
 import { addAsset } from './store.js';
 import { currentStyle, syncGroups } from '../shared/model.js';
-import { lastAnalysis } from './preview.js';
+import { makeTrack } from '../shared/tracklist.js';
+import { seeded } from '../shared/templates/common.js';
+import { lastAnalysis, fitScale, fitCols } from './preview.js';
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** Títulos de ejemplo de longitudes variadas para el disco largo. */
+const WORDS = ['Amor', 'Noche', 'Ciudad', 'Fuego', 'Mar', 'Luna', 'Caballo', 'Domingo', 'Verano', 'Eléctrico', 'Despacio', 'Corazón', 'Ruido', 'Cielo', 'Bailar', 'Para', 'de', 'la', 'en', 'Siempre'];
+function longAlbum(n) {
+  const r = seeded(42);
+  return Array.from({ length: n }, (_, i) => {
+    const words = 1 + Math.floor(r() * 4);
+    let title = Array.from({ length: words }, () => WORDS[Math.floor(r() * WORDS.length)]).join(' ');
+    if (i % 9 === 4) title += ' (Remix)';
+    if (i % 13 === 7) title += ' (feat. Alguien Muy Famoso)';
+    return makeTrack(title, 120 + Math.floor(r() * 180));
+  });
+}
+
+/** Modo disco largo: CDBOOK_SMOKE_LONG=45 npm run smoke */
+async function runLong(n, showTab) {
+  const report = { steps: [], errors: [], long: {} };
+  commit((s) => { s.tracks = longAlbum(n); s.images.stickers = []; }, { rebuild: true });
+  const { TEMPLATES } = await import('../shared/templates/index.js');
+  for (const auto of [false, true]) {
+    commit((s) => { s.autoFit = auto; }, { rebuild: true });
+    for (const t of TEMPLATES) {
+      switchTemplate(t.id);
+      showTab('design');
+      await wait(350);
+      report.long[`${auto ? 'auto' : 'sin'}:${t.id}`] = { scale: fitScale, cols: fitCols, vertical: lastAnalysis.vertical, titles: lastAnalysis.overflow.length };
+      if (auto) {
+        const res = await window.api.exportPng({ state: store.state, assets: usedAssets(), suggestedName: `largo-${t.id}`, fitScale, fitCols });
+        report.steps.push({ name: `largo-${t.id}`, ok: !!res });
+      }
+    }
+  }
+  await window.api.smokeDone(report);
+}
+
 export async function runSmoke({ commands, showTab }) {
+  const longN = await window.api.smokeLong();
+  if (longN) { window.confirm = () => true; await wait(1200); await runLong(longN, showTab); return; }
   const report = { steps: [], errors: [] };
   window.confirm = () => true; // sin diálogos bloqueantes durante la prueba
   window.addEventListener('error', (e) => {
@@ -28,7 +66,7 @@ export async function runSmoke({ commands, showTab }) {
     }
   };
   const exp = async (kind, name) => {
-    const payload = { state: store.state, assets: usedAssets(), suggestedName: name };
+    const payload = { state: store.state, assets: usedAssets(), suggestedName: name, fitScale, fitCols };
     const res = kind === 'pdf' ? await window.api.exportPdf(payload) : await window.api.exportPng(payload);
     report.steps.push({ name: `export-${kind}-${name}`, ok: !!res, result: res });
   };

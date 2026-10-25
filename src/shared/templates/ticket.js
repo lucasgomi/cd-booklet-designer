@@ -5,7 +5,7 @@
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, stripAccents, PLACEHOLDER_HELP } from '../text.js';
 import { barcodeSvg, decorativeBarcodeSvg, qrSvg } from '../codes.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
 
 /** Borde inferior en zigzag como clip-path. */
 function zigzagClip(widthMm, heightMm, toothMm) {
@@ -73,6 +73,7 @@ export default {
     paperPadBottom: 2,
     autoRowHeight: true,
     rowHeight: 2.5,
+    columns: 'auto',
   },
 
   presets: [
@@ -140,6 +141,7 @@ export default {
       { key: 'paperPadBottom', label: 'Margen interior inferior', type: 'number', min: 1, max: 20, step: 0.5, unit: 'mm' },
       { key: 'autoRowHeight', label: 'Altura de fila automática', type: 'toggle' },
       { key: 'rowHeight', label: 'Altura de fila', type: 'number', min: 1.5, max: 8, step: 0.1, unit: 'mm', when: (s) => !s.autoRowHeight },
+      COLUMNS_CONTROL,
     ] },
   ],
 
@@ -219,7 +221,7 @@ export default {
       r.style.minHeight = `${(s.listSize * 0.3528 * 1.05).toFixed(2)}mm`;
       list.appendChild(r);
     });
-    paper.appendChild(list);
+    paper.appendChild(columnize(list, listColumns(s), '4mm'));
     paper.appendChild(sep());
 
     const footL = fill(s.footerLeft);
