@@ -35,6 +35,11 @@ const FONTS = {
   'arimo': 'Sans',
   'caveat': 'Manuscrita',
   'great-vibes': 'Manuscrita',
+  'special-elite': 'Mono',
+  'poiret-one': 'Display',
+  'monoton': 'Display',
+  'vt323': 'Pixel',
+  'press-start-2p': 'Pixel',
 };
 const SUBSETS = ['latin', 'latin-ext'];
 

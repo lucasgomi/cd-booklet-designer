@@ -51,8 +51,8 @@ export function abbreviationCandidates(title) {
   t = t.replace(/([([])[^)\]]*?['’]s\s+/g, '$1');
   push(t);
 
-  // "(Fred Remix)" -> "(Remix)"
-  push(t.replace(/([([])[^)\]]*\s(\S+)([)\]])/g, '$1$2$3'));
+  // "(Fred Remix)" -> "(Remix)" (sólo con palabras que lo permiten).
+  push(t.replace(/([([])[^)\]]*\s(remix|mix|edit|version|versión|live|demo|acoustic|acústica|instrumental|remaster)([)\]])/gi, '$1$2$3'));
 
   // Sin paréntesis.
   const noParens = t.replace(/\s*[([][^)\]]*[)\]]/g, '');

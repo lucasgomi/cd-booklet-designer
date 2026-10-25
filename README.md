@@ -88,13 +88,28 @@ Objetos dibujados:
 15. **Polaroid**: página de álbum de recortes, con una polaroid de tu foto,
     cinta washi, dibujitos y la lista en una hoja de cuaderno arrancada.
 
+Más estéticas:
+
+16. **Fanzine**: fotocopia punk con el título en letras recortadas de revista,
+    máquina de escribir, cinta adhesiva y tachones.
+17. **Brutalista**: retícula de bordes gruesos, letra enorme y un bloque de color.
+18. **Art déco**: negro y oro, abanico de rayos y marco escalonado.
+19. **Synthwave**: sol a rayas, cuadrícula de neón y letras luminosas.
+20. **Bauhaus**: círculos, triángulos y colores primarios.
+21. **Periódico**: portada de diario con cabecera, titular, foto y tres columnas.
+22. **Tarjeta de embarque**: billete de avión con origen, destino e itinerario.
+23. **8 bits**: pantalla de consola portátil con letra de píxeles.
+24. **Postal**: «Saludos desde…» con letras rellenas de foto, sello y matasellos.
+25. **Carta de restaurante**: entrantes, principales y postres; la duración es el
+    precio.
+
 Cada plantilla trae **estilos incluidos**: combinaciones de colores y
 letras que se aplican con un clic y se deshacen con Ctrl+Z.
 
 Todo lo visual se ajusta desde la interfaz:
 - colores, con selector y campo hexadecimal;
-- tipografías de título y de lista, con grosor y tamaño. Se incluyen 23
-  familias de Google Fonts (con cursivas y dos manuscritas) que funcionan sin conexión, y se puede añadir
+- tipografías de título y de lista, con grosor y tamaño. Se incluyen 28
+  familias de Google Fonts (con cursivas, manuscritas y de píxeles) que funcionan sin conexión, y se puede añadir
   cualquier otra por su nombre (necesita Internet);
 - textos;
 - márgenes, alto de la cabecera y altura de fila.
@@ -142,6 +157,22 @@ discos. También se pueden exportar e importar como archivo
 - Los proyectos `.cdbook` guardan los datos, los ajustes y las imágenes en
   un solo archivo.
 - Deshacer y rehacer con Ctrl+Z y Ctrl+Y.
+
+## Actualizaciones automáticas
+
+La versión instalada (`Setup`) busca versiones nuevas en las releases de
+GitHub al arrancar y cada 4 horas. Si hay una nueva, la descarga en segundo
+plano y se instala sola al cerrar la app; también puedes pulsar «Reiniciar y
+actualizar». La portable no puede sustituirse a sí misma: avisa y ofrece el
+enlace de descarga. En el menú *Ayuda* está «Buscar actualizaciones…».
+
+Para que funcione, el repositorio tiene que ser **público**: la app lee las
+releases sin iniciar sesión.
+
+Para publicar una versión nueva: **Actions → CD Booklet Designer → Run
+workflow** y escribe la versión (por ejemplo `v1.2.0`). El flujo compila en
+Windows, pone ese número de versión y sube los `.exe`, `latest.yml` y los
+`.blockmap` que usa el actualizador.
 
 ## Desarrollo
 

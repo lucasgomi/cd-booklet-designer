@@ -33,6 +33,14 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Set version from the release tag
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release != ''
+        shell: bash
+        env:
+          TAG: ${{ inputs.release != '' && inputs.release || github.ref_name }}
+        run: npm version "${TAG#v}" --no-git-tag-version --allow-same-version
+
+      # latest.yml y los .blockmap son lo que lee la actualización automática.
       - name: Build installer and portable exe
         run: npx electron-builder --win nsis portable --publish never
         env:
@@ -43,6 +51,8 @@ jobs:
           name: cd-booklet-designer-windows
           path: |
             dist/*.exe
+            dist/latest.yml
+            dist/*.blockmap
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v') || inputs.release != ''
@@ -51,7 +61,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.release != '' && inputs.release || github.ref_name }}
         run: |
-          gh release create "$TAG" dist/*.exe \
+          gh release create "$TAG" dist/*.exe dist/latest.yml dist/*.blockmap \
             --title "CD Booklet Designer $TAG" \
             --target "${{ github.sha }}" \
             --generate-notes \

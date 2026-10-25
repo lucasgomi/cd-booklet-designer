@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { parseDuration, formatDuration, formatTotal, totalSeconds } from '../src/shared/time.js';
 import { parsePastedText, parseCue, cueToTracks } from '../src/shared/tracklist.js';
 import { fillTemplate, stripAccents, abbreviationCandidates } from '../src/shared/text.js';
+import { isNewer } from '../src/shared/version.js';
 
 test('parseDuration acepta varios formatos', () => {
   assert.equal(parseDuration('3:04'), 184);
@@ -112,4 +113,13 @@ test('abreviaturas propuestas', () => {
   assert.ok(c.every((x) => !/[/]…$/.test(x)));
   assert.equal(abbreviationCandidates('Canción (feat. Alguien)')[0], 'Canción');
   assert.equal(abbreviationCandidates('Song - Remastered 2011')[0], 'Song');
+  assert.ok(abbreviationCandidates("Beto's Horns (Fred Remix)").includes("Beto's Horns (Remix)"));
+  assert.ok(!abbreviationCandidates("Mi Deseo / Bad Bitch (Live at NPR Music's Tiny Desk)").includes('Mi Deseo / Bad Bitch (Desk)'));
+});
+
+test('comparación de versiones para las actualizaciones', () => {
+  assert.equal(isNewer('v1.10.0', '1.9.3'), true);
+  assert.equal(isNewer('1.1.0', '1.1.0'), false);
+  assert.equal(isNewer('v1.0.9', '1.1.0'), false);
+  assert.equal(isNewer('2.0', '1.9.9'), true);
 });

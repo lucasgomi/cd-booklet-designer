@@ -252,11 +252,71 @@ function setupDrop() {
   });
 }
 
+// ------------------------------------------------------- actualizaciones
+
+function renderUpdate(status) {
+  const bar = $('update-bar');
+  const close = () => { bar.hidden = true; };
+  const btn = (label, fn, cls = '') => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    if (cls) b.className = cls;
+    b.addEventListener('click', fn);
+    return b;
+  };
+  const text = (t) => { const s = document.createElement('span'); s.textContent = t; return s; };
+  const spacer = () => { const s = document.createElement('div'); s.className = 'spacer'; return s; };
+  bar.className = 'update-bar';
+  switch (status.state) {
+    case 'checking':
+      bar.replaceChildren(text('Buscando actualizaciones…'));
+      break;
+    case 'downloading': {
+      const p = document.createElement('progress');
+      p.max = 100;
+      p.value = status.percent || 0;
+      bar.replaceChildren(text(`Descargando la versión ${status.version || 'nueva'}…`), p, spacer(), btn('Ocultar', close));
+      break;
+    }
+    case 'ready':
+      bar.replaceChildren(
+        text(`✨ Versión ${status.version} lista. Se instalará sola al cerrar la app.`), spacer(),
+        btn('Reiniciar y actualizar ahora', async () => {
+          if (store.dirty && !confirm('Hay cambios sin guardar. ¿Reiniciar igualmente? (Cancelar para guardar antes)')) return;
+          window.api.installUpdate();
+        }, 'primary'),
+        btn('Luego', close));
+      break;
+    case 'portable':
+      bar.replaceChildren(
+        text(`✨ Hay una versión nueva (${status.version}). La versión portable no se actualiza sola: descarga el nuevo .exe o usa el instalador, que sí se actualiza.`), spacer(),
+        btn('Descargar', () => window.api.openExternal(status.url), 'primary'), btn('Luego', close));
+      break;
+    case 'latest':
+      bar.replaceChildren(text(`Tienes la última versión (${status.version}).`), spacer(), btn('Vale', close));
+      break;
+    case 'dev':
+      bar.replaceChildren(text(`Versión de desarrollo (${status.version}): las actualizaciones sólo funcionan en la app instalada.`), spacer(), btn('Vale', close));
+      break;
+    case 'error':
+      bar.className = 'update-bar error';
+      bar.replaceChildren(text(`No se pudo buscar actualizaciones: ${status.message}`), spacer(), btn('Cerrar', close));
+      break;
+    default:
+      bar.hidden = true;
+      return;
+  }
+  bar.hidden = false;
+}
+window.api.onUpdate(renderUpdate);
+
 // ---------------------------------------------------------------- inicio
 
 async function start() {
   initPreview({ selectionChanged: () => rebuild('images'), editTrack });
   setupDrop();
+  window.api.updateStatus().then((s) => { if (s && s.state !== 'idle') renderUpdate(s); });
+  window.api.appVersion().then((v) => { document.querySelector('.brand').title = `Versión ${v}`; });
   await refreshUserTemplates().catch(() => {});
   const initial = await window.api.initialFile();
   if (initial) {

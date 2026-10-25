@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { audioDuration } from './audio.js';
 import { withDpi } from './png.js';
+import { initUpdates, checkForUpdates, installUpdateNow, lastUpdateStatus } from './updater.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.resolve(here, '..');
@@ -86,6 +87,12 @@ function buildMenu() {
       { role: 'copy', label: 'Copiar' },
       { role: 'paste', label: 'Pegar' },
       { role: 'selectAll', label: 'Seleccionar todo' },
+    ] },
+    { label: 'Ayuda', submenu: [
+      { label: 'Buscar actualizaciones…', click: () => checkForUpdates(true) },
+      { label: 'Página del proyecto', click: () => shell.openExternal('https://github.com/lucasgomi/cd-booklet-designer') },
+      { type: 'separator' },
+      { label: `Versión ${app.getVersion()}`, enabled: false },
     ] },
     { label: 'Ver', submenu: [
       { label: 'Acercar', accelerator: 'CmdOrCtrl+=', click: () => send('zoom-in') },
@@ -209,6 +216,13 @@ ipcMain.handle('print:ready', (e, error) => {
 ipcMain.handle('app:set-dirty', (_e, value) => { dirty = !!value; });
 ipcMain.handle('app:set-title', (_e, title) => mainWindow?.setTitle(title));
 ipcMain.handle('app:close-now', () => { forceClose = true; mainWindow?.close(); });
+ipcMain.handle('app:version', () => app.getVersion());
+ipcMain.handle('update:check', () => checkForUpdates(true));
+ipcMain.handle('update:status', () => lastUpdateStatus());
+ipcMain.handle('update:install', () => { forceClose = true; installUpdateNow(); });
+ipcMain.handle('shell:external', (_e, url) => {
+  if (/^https:\/\/github\.com\//.test(url)) shell.openExternal(url);
+});
 ipcMain.handle('app:smoke-dir', () => SMOKE_DIR);
 // Para iterar rápido: CDBOOK_SMOKE_ONLY=vinyl,cassette npm run smoke
 ipcMain.handle('app:smoke-only', () => (SMOKE_DIR && process.env.CDBOOK_SMOKE_ONLY ? process.env.CDBOOK_SMOKE_ONLY.split(',') : null));
@@ -330,6 +344,7 @@ ipcMain.handle('templates:import', async () => {
 app.whenReady().then(() => {
   if (SMOKE_DIR) console.log('[main] listo');
   createWindow();
+  initUpdates((status) => mainWindow?.webContents.send('update', status));
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

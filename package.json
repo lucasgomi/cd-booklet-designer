@@ -1,7 +1,7 @@
 {
   "name": "cd-booklet",
   "productName": "CD Booklet Designer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Editor de libritos para cajas de CD slim",
   "author": "lucasgomi",
   "license": "MIT",
@@ -31,12 +31,17 @@
     "@fontsource/inter": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@fontsource/lora": "^5.3.0",
+    "@fontsource/monoton": "^5.3.0",
     "@fontsource/montserrat": "^5.3.0",
     "@fontsource/oswald": "^5.3.0",
     "@fontsource/playfair-display": "^5.3.0",
+    "@fontsource/poiret-one": "^5.3.0",
     "@fontsource/poppins": "^5.3.0",
+    "@fontsource/press-start-2p": "^5.3.0",
     "@fontsource/roboto": "^5.3.0",
     "@fontsource/space-mono": "^5.3.0",
+    "@fontsource/special-elite": "^5.3.0",
+    "@fontsource/vt323": "^5.3.0",
     "@fontsource/young-serif": "^5.3.0",
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8",
@@ -78,10 +83,20 @@
     },
     "portable": {
       "artifactName": "CD-Booklet-Designer-Portable-${version}.${ext}"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "lucasgomi",
+        "repo": "cd-booklet-designer"
+      }
+    ]
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/lucasgomi/cd-booklet-designer.git"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }
