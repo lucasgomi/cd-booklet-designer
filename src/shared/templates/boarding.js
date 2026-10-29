@@ -3,7 +3,7 @@
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
 import { decorativeBarcodeSvg } from '../codes.js';
-import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns } from './common.js';
+import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns, deco } from './common.js';
 
 export default {
   id: 'boarding',
@@ -36,6 +36,12 @@ export default {
     autoRowHeight: true,
     rowHeight: 2.6,
   },
+
+  decorations: [
+    { key: 'decoPlane', label: 'Avión ✈' },
+    { key: 'decoBarcode', label: 'Código de barras' },
+    { key: 'decoNotches', label: 'Muescas del troquel' },
+  ],
 
   presets: [
     { name: 'Clásica', style: {} },
@@ -93,7 +99,7 @@ export default {
         city(s.fromCode, s.fromCity, 'flex-start'),
         h('div', { style: { flex: '1 1 auto', display: 'flex', alignItems: 'center', gap: '1mm', color: s.accentColor } },
           h('div', { style: { flex: 1, borderTop: `0.3mm dashed ${rgba(s.dimColor, 0.8)}` } }),
-          h('span', { text: '✈', style: { fontSize: '13pt', color: s.accentColor, lineHeight: 1 } }),
+          deco(s, 'decoPlane', () => h('span', { text: '✈', style: { fontSize: '13pt', color: s.accentColor, lineHeight: 1 } })),
           h('div', { style: { flex: 1, borderTop: `0.3mm dashed ${rgba(s.dimColor, 0.8)}` } })),
         city(s.toCode, s.toCity, 'flex-end')),
       h('div', { style: { padding: '2.5mm 4mm 3mm', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '2mm' } },
@@ -109,13 +115,13 @@ export default {
     const itinerary = h('div', { style: { flex: '1 1 auto', minHeight: 0, padding: '2.5mm 4mm 3mm', display: 'flex', flexDirection: 'column' } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2mm', flex: 'none' } },
         h('span', { text: 'Itinerario', style: label }),
-        decorativeBarcodeSvg(`${values.artista}${values.titulo}`, { color: s.inkColor, widthMm: 28, heightMm: 3.5, bars: 22 })),
+        deco(s, 'decoBarcode', () => decorativeBarcodeSvg(`${values.artista}${values.titulo}`, { color: s.inkColor, widthMm: 28, heightMm: 3.5, bars: 22 }))),
       h('div', { style: { flex: '1 1 auto', minHeight: 0, display: 'flex', gap: '5mm' } }, ...cols));
 
     const card = h('div', {
       style: { position: 'absolute', inset: '6mm', background: s.cardColor, borderRadius: '3mm', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: `0 1mm 3mm ${rgba('#000000', 0.18)}` },
     }, top, perforation, itinerary);
     return h('div', { style: { position: 'absolute', inset: 0, background: s.bgColor } },
-      card, h('div', { style: { position: 'absolute', inset: '6mm', pointerEvents: 'none' } }, notch('left'), notch('right')));
+      card, s.decoNotches === false ? null : h('div', { style: { position: 'absolute', inset: '6mm', pointerEvents: 'none' } }, notch('left'), notch('right')));
   },
 };

@@ -3,7 +3,7 @@
 // trozos de cinta adhesiva, letras grandes y líneas de cuaderno.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, stripAccents, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize, deco } from './common.js';
 
 export default {
   id: 'setlist',
@@ -42,6 +42,12 @@ export default {
     columns: 'auto',
   },
 
+  decorations: [
+    { key: 'showTape', label: 'Cinta adhesiva' },
+    { key: 'showMargin', label: 'Margen rojo' },
+    { key: 'showLines', label: 'Líneas de cuaderno' },
+  ],
+
   presets: [
     { name: 'Escenario', style: {} },
     { name: 'Rotulador rojo', style: { textColor: '#C3261C', accentColor: '#151515', bgColor: '#101012' } },
@@ -77,9 +83,6 @@ export default {
     ] },
     { section: 'Papel', items: [
       { key: 'rotation', label: 'Giro del papel', type: 'number', min: -6, max: 6, step: 0.1, unit: '°' },
-      { key: 'showTape', label: 'Cinta adhesiva', type: 'toggle' },
-      { key: 'showLines', label: 'Líneas de cuaderno', type: 'toggle' },
-      { key: 'showMargin', label: 'Margen rojo', type: 'toggle' },
       { key: 'paperShadow', label: 'Sombra', type: 'toggle' },
       { key: 'paperInset', label: 'Hueco alrededor del papel', type: 'number', min: 0, max: 20, step: 0.5, unit: 'mm' },
       { key: 'paperPad', label: 'Margen interior', type: 'number', min: 2, max: 15, step: 0.5, unit: 'mm' },
@@ -145,7 +148,7 @@ export default {
         boxShadow: s.paperShadow ? `0 1mm 3mm ${rgba('#000000', 0.45)}` : 'none',
       },
     },
-    s.showMargin ? h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: `${2 + numW + numGap / 2}mm`, width: '0.25mm', background: rgba('#E0524A', 0.7) } }) : null,
+    s.showMargin ? deco(s, 'showMargin', h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: `${2 + numW + numGap / 2}mm`, width: '0.25mm', background: rgba('#E0524A', 0.7) } })) : null,
     content);
     if (s.showTape) {
       const tape = (left, rot) => h('div', {
@@ -154,7 +157,7 @@ export default {
           transform: `rotate(${rot}deg)`, boxShadow: `0 0.2mm 0.6mm ${rgba('#000000', 0.15)}`,
         },
       });
-      paper.append(tape('8mm', -8), tape('calc(100% - 26mm)', 7));
+      paper.append(deco(s, 'showTape', tape('8mm', -8)), deco(s, 'showTape', tape('calc(100% - 26mm)', 7)));
     }
 
     return h('div', {

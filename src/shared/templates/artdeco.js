@@ -2,7 +2,7 @@
 // mayúsculas espaciadas y rombos.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, toRoman, PLACEHOLDER_HELP } from '../text.js';
-import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns } from './common.js';
+import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns, deco } from './common.js';
 
 export default {
   id: 'artdeco',
@@ -26,6 +26,13 @@ export default {
     autoRowHeight: true,
     rowHeight: 3,
   },
+
+  decorations: [
+    { key: 'decoFan', label: 'Abanico de rayos' },
+    { key: 'decoFrame', label: 'Marco dorado' },
+    { key: 'decoCorners', label: 'Esquinas escalonadas' },
+    { key: 'decoDivider', label: 'Filete con rombos ◆ ◆ ◆' },
+  ],
 
   presets: [
     { name: 'Gatsby', style: {} },
@@ -61,16 +68,16 @@ export default {
 
     // Marco con esquinas escalonadas: dos rectángulos y cuadraditos en las esquinas.
     const frame = [
-      h('div', { style: { position: 'absolute', inset: '4mm', border: `0.35mm solid ${gold}` } }),
-      h('div', { style: { position: 'absolute', inset: '5.5mm', border: `0.15mm solid ${rgba(gold, 0.7)}` } }),
-      ...[['4mm', '4mm'], ['4mm', 'auto'], ['auto', '4mm'], ['auto', 'auto']].map(([top, left]) => h('div', {
+      deco(s, 'decoFrame', () => h('div', { style: { position: 'absolute', inset: '4mm', border: `0.35mm solid ${gold}` } })),
+      deco(s, 'decoFrame', () => h('div', { style: { position: 'absolute', inset: '5.5mm', border: `0.15mm solid ${rgba(gold, 0.7)}` } })),
+      ...[['4mm', '4mm'], ['4mm', 'auto'], ['auto', '4mm'], ['auto', 'auto']].map(([top, left]) => deco(s, 'decoCorners', () => h('div', {
         style: {
           position: 'absolute', width: '6mm', height: '6mm', background: s.bgColor, border: `0.35mm solid ${gold}`, boxSizing: 'border-box',
           top: top === 'auto' ? 'auto' : top, bottom: top === 'auto' ? '4mm' : 'auto', left: left === 'auto' ? 'auto' : left, right: left === 'auto' ? '4mm' : 'auto',
           transform: `translate(${left === 'auto' ? '' : '-'}2mm, ${top === 'auto' ? '' : '-'}2mm)`,
         },
-      })),
-    ];
+      }))),
+    ].filter(Boolean);
     // Abanico de rayos.
     const fan = h('div', {
       style: {
@@ -94,11 +101,11 @@ export default {
     const content = h('div', { style: { position: 'absolute', inset: '32mm 10mm 9mm', display: 'flex', flexDirection: 'column' } },
       h('div', { text: fillTemplate(s.titleText, values), style: { ...caps, fontSize: `${s.titleSize}pt`, lineHeight: 1.05, flex: 'none', textWrap: 'balance', letterSpacing: '0.18em' } }),
       sub ? h('div', { text: sub, style: { ...caps, fontSize: `${s.listSize * 0.95}pt`, color: s.textColor, margin: '1.5mm 0 0', flex: 'none' } }) : null,
-      h('div', { style: { display: 'flex', alignItems: 'center', gap: '2mm', margin: '2.5mm 0', flex: 'none' } },
-        h('div', { style: { flex: 1, height: '0.2mm', background: gold } }), h('div', { text: '◆ ◆ ◆', style: { color: gold, fontSize: '5pt', letterSpacing: '0.4em' } }), h('div', { style: { flex: 1, height: '0.2mm', background: gold } })),
+      deco(s, 'decoDivider', () => h('div', { style: { display: 'flex', alignItems: 'center', gap: '2mm', margin: '2.5mm 0', flex: 'none' } },
+        h('div', { style: { flex: 1, height: '0.2mm', background: gold } }), h('div', { text: '◆ ◆ ◆', style: { color: gold, fontSize: '5pt', letterSpacing: '0.4em' } }), h('div', { style: { flex: 1, height: '0.2mm', background: gold } }))) || h('div', { style: { height: '2.5mm', flex: 'none' } }),
       h('div', { style: { flex: '1 1 auto', minHeight: 0, display: 'flex', gap: '4mm' } }, ...cols),
       footer ? h('div', { text: footer, style: { ...caps, fontSize: `${s.listSize * 0.85}pt`, marginTop: '2mm', flex: 'none' } }) : null);
 
-    return h('div', { style: { position: 'absolute', inset: 0, background: s.bgColor, overflow: 'hidden' } }, fan, ...frame, content);
+    return h('div', { style: { position: 'absolute', inset: 0, background: s.bgColor, overflow: 'hidden' } }, deco(s, 'decoFan', fan), ...frame, content);
   },
 };

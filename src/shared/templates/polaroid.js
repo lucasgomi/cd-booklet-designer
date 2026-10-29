@@ -3,7 +3,7 @@
 // cuaderno con el borde arrancado.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, deco } from './common.js';
 
 /** Borde superior irregular (papel arrancado), determinista. */
 function tornClip() {
@@ -32,7 +32,6 @@ export default {
     accentColor: '#E25C7B',
     dimColor: '#8F8579',
     useBgImage: true,
-    doodles: true,
     titleFont: 'Caveat', titleWeight: 700, titleSize: 22,
     listFont: 'Caveat', listWeight: 500, listSize: 8.6,
     captionText: '{titulo} ♡',
@@ -47,6 +46,15 @@ export default {
     autoRowHeight: true,
     rowHeight: 3.2,
   },
+
+  decorations: [
+    { key: 'decoPhotoTape', label: 'Cinta de la polaroid' },
+    { key: 'decoPaperTape', label: 'Cinta de la hoja' },
+    { key: 'decoSparkle', label: 'Destello ✦' },
+    { key: 'decoHeart', label: 'Corazón ♡' },
+    { key: 'decoStar', label: 'Estrellita ✧' },
+    { key: 'decoUnderline', label: 'Subrayado del título' },
+  ],
 
   presets: [
     { name: 'Verano', style: {} },
@@ -68,7 +76,6 @@ export default {
       { key: 'inkColor', label: 'Tinta', type: 'color' },
       { key: 'accentColor', label: 'Detalles y números', type: 'color' },
       { key: 'dimColor', label: 'Duraciones', type: 'color' },
-      { key: 'doodles', label: 'Dibujitos (estrellas, corazones)', type: 'toggle' },
     ] },
     { section: 'Tipografías', items: [
       { type: 'font', label: 'Título', family: 'titleFont', weight: 'titleWeight', size: 'titleSize' },
@@ -119,21 +126,22 @@ export default {
       },
     }),
     h('div', { text: fillTemplate(s.captionText, values), style: { ...hand(s.listSize * 1.5), textAlign: 'center', marginTop: '1.6mm', whiteSpace: 'nowrap', overflow: 'hidden' } }),
-    tape({ left: '50%', top: '-2.6mm', transform: 'translateX(-50%) rotate(3deg)' }, s.tapeColor));
+    deco(s, 'decoPhotoTape', () => tape({ left: '50%', top: '-2.6mm', transform: 'translateX(-50%) rotate(3deg)' }, s.tapeColor)));
 
     // Título y datos a la derecha.
     const title = h('div', {
       style: { position: 'absolute', left: `${PW + 12}mm`, right: '6mm', top: '12mm', transform: 'rotate(-2deg)' },
     },
     h('div', { text: fillTemplate(s.titleText, values), style: { fontFamily: fontStack(s.titleFont), fontWeight: s.titleWeight, fontSize: `${s.titleSize}pt`, color: s.inkColor, lineHeight: 0.95, textWrap: 'balance' } }),
-    h('div', { style: { height: '1.2mm', width: '70%', margin: '1.6mm 0 1.8mm', background: rgba(s.accentColor, 0.55), borderRadius: '1mm', transform: 'rotate(-1deg)' } }),
+    deco(s, 'decoUnderline', () => h('div', { style: { height: '1.2mm', width: '70%', margin: '1.6mm 0 1.8mm', background: rgba(s.accentColor, 0.55), borderRadius: '1mm', transform: 'rotate(-1deg)' } })) || h('div', { style: { height: '2mm' } }),
     h('div', { text: fillTemplate(s.infoText, values), style: { ...hand(s.listSize * 0.95, s.dimColor), lineHeight: 1.1 } }));
 
-    const doodles = s.doodles ? [
-      h('div', { text: '✦', style: { position: 'absolute', left: '102mm', top: '5mm', ...hand(14, s.accentColor), transform: 'rotate(12deg)' } }),
-      h('div', { text: '♡', style: { position: 'absolute', left: '108mm', top: '42mm', ...hand(12, s.accentColor), transform: 'rotate(-10deg)' } }),
-      h('div', { text: '✧', style: { position: 'absolute', left: '62mm', top: '50mm', ...hand(10, s.accentColor) } }),
-    ] : [];
+    // (proyectos antiguos: «doodles: false» quitaba los tres dibujitos)
+    const doodles = s.doodles === false ? [] : [
+      deco(s, 'decoSparkle', () => h('div', { text: '✦', style: { position: 'absolute', left: '102mm', top: '5mm', ...hand(14, s.accentColor), transform: 'rotate(12deg)' } })),
+      deco(s, 'decoHeart', () => h('div', { text: '♡', style: { position: 'absolute', left: '108mm', top: '42mm', ...hand(12, s.accentColor), transform: 'rotate(-10deg)' } })),
+      deco(s, 'decoStar', () => h('div', { text: '✧', style: { position: 'absolute', left: '62mm', top: '50mm', ...hand(10, s.accentColor) } })),
+    ].filter(Boolean);
 
     // Hoja de cuaderno con la lista.
     const half = Math.ceil(tracks.length / 2);
@@ -162,7 +170,7 @@ export default {
     },
     h('div', { style: { position: 'absolute', left: '6mm', top: 0, bottom: 0, width: '0.25mm', background: rgba('#E0524A', 0.6) } }),
     column(tracks.slice(0, half)), column(tracks.slice(half))),
-    tape({ right: '6mm', top: '-1.5mm', transform: 'rotate(-6deg)', width: '16mm' }, s.tape2Color));
+    deco(s, 'decoPaperTape', () => tape({ right: '6mm', top: '-1.5mm', transform: 'rotate(-6deg)', width: '16mm' }, s.tape2Color)));
 
     return h('div', {
       style: {

@@ -309,3 +309,10 @@ dialog textarea { font-family: 'JetBrains Mono', Consolas, monospace; font-size:
 .update-bar progress { width: 140px; accent-color: var(--ok); }
 .warning.info { color: #8fb4ff; }
 .fit-toggle { padding: 10px 0; border-bottom: 1px solid var(--line); }
+
+/* Adornos: resaltado al pasar el ratón y menú para ocultarlos */
+.cdb-sheet .cdb-deco { cursor: pointer; }
+.cdb-sheet .cdb-deco:hover { outline: 1px dashed rgba(79, 127, 214, .9); outline-offset: 1px; }
+.canvas { position: relative; }
+.deco-menu { position: absolute; z-index: 20; display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; box-shadow: 0 6px 20px rgba(0, 0, 0, .45); font-size: 12px; white-space: nowrap; }
+.fit-toggle .help { display: block; margin-top: 4px; }

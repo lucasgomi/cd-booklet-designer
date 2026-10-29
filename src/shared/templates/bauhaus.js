@@ -2,7 +2,7 @@
 // minúsculas y viñetas de círculo, cuadrado y triángulo.
 import { h, fontStack } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns } from './common.js';
+import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns, deco } from './common.js';
 
 export default {
   id: 'bauhaus',
@@ -27,6 +27,14 @@ export default {
     autoRowHeight: true,
     rowHeight: 3,
   },
+
+  decorations: [
+    { key: 'decoCircle', label: 'Círculo rojo' },
+    { key: 'decoTriangle', label: 'Triángulo azul' },
+    { key: 'decoQuarter', label: 'Cuarto de círculo amarillo' },
+    { key: 'decoBarH', label: 'Barra horizontal' },
+    { key: 'decoBarV', label: 'Barra vertical' },
+  ],
 
   presets: [
     { name: 'Clásico', style: {} },
@@ -60,12 +68,12 @@ export default {
     const { style: s, tracks, values } = ctx;
     const tx = (x) => (s.lowercase ? String(x).toLowerCase() : x);
     const shapes = [
-      h('div', { style: { position: 'absolute', left: '62mm', top: '-10mm', width: '52mm', height: '52mm', borderRadius: '50%', background: s.red } }),
-      h('div', { style: { position: 'absolute', left: '86mm', top: '12mm', width: '28mm', height: '28mm', background: s.blue, clipPath: 'polygon(50% 0, 100% 100%, 0 100%)' } }),
-      h('div', { style: { position: 'absolute', left: '60mm', top: '17mm', width: '22mm', height: '22mm', background: s.yellow, borderRadius: '0 0 0 24mm' } }),
-      h('div', { style: { position: 'absolute', left: '6mm', top: '41mm', width: '78mm', height: '2.2mm', background: s.inkColor } }),
-      h('div', { style: { position: 'absolute', left: '104mm', top: '4mm', width: '1.5mm', height: '36mm', background: s.inkColor } }),
-    ];
+      deco(s, 'decoCircle', () => h('div', { style: { position: 'absolute', left: '62mm', top: '-10mm', width: '52mm', height: '52mm', borderRadius: '50%', background: s.red } })),
+      deco(s, 'decoTriangle', () => h('div', { style: { position: 'absolute', left: '86mm', top: '12mm', width: '28mm', height: '28mm', background: s.blue, clipPath: 'polygon(50% 0, 100% 100%, 0 100%)' } })),
+      deco(s, 'decoQuarter', () => h('div', { style: { position: 'absolute', left: '60mm', top: '17mm', width: '22mm', height: '22mm', background: s.yellow, borderRadius: '0 0 0 24mm' } })),
+      deco(s, 'decoBarH', () => h('div', { style: { position: 'absolute', left: '6mm', top: '41mm', width: '78mm', height: '2.2mm', background: s.inkColor } })),
+      deco(s, 'decoBarV', () => h('div', { style: { position: 'absolute', left: '104mm', top: '4mm', width: '1.5mm', height: '36mm', background: s.inkColor } })),
+    ].filter(Boolean);
     const marks = [
       (c) => h('span', { style: { width: '2mm', height: '2mm', borderRadius: '50%', background: c, flex: 'none' } }),
       (c) => h('span', { style: { width: '2mm', height: '2mm', background: c, flex: 'none' } }),

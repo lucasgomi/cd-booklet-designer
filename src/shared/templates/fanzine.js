@@ -2,7 +2,7 @@
 // máquina de escribir, cinta adhesiva y tachones.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns, seeded, hashSeed } from './common.js';
+import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns, seeded, hashSeed, deco } from './common.js';
 
 const CUT_FONTS = ['Anton', 'Abril Fatface', 'Special Elite', 'Archivo Black', 'Courier Prime', 'Bebas Neue', 'Playfair Display', 'Fraunces'];
 
@@ -23,13 +23,20 @@ export default {
     infoText: '{titulo}[ — nº {disco}][ — {fecha}] — {pistas} temas — {total}',
     listFont: 'Special Elite', listWeight: 400, listSize: 7.8,
     titleSize: 13,
-    scribbles: true,
     useShortTitles: true,
     durationFormat: 'm:ss',
     totalFormat: 'h-min-lower',
     autoRowHeight: true,
     rowHeight: 3,
   },
+
+  decorations: [
+    { key: 'decoTapeTop', label: 'Cinta adhesiva (arriba)' },
+    { key: 'decoTapeBottom', label: 'Cinta adhesiva (abajo)' },
+    { key: 'decoX', label: 'Tachón rojo ✕' },
+    { key: 'decoStar', label: 'Estrella ★' },
+    { key: 'decoInfoBar', label: 'Línea de datos (banda negra)' },
+  ],
 
   presets: [
     { name: 'Fotocopia', style: {} },
@@ -46,7 +53,6 @@ export default {
       { key: 'tapeColor', label: 'Cinta adhesiva', type: 'color' },
       { key: 'cutColors', label: 'Colores de los recortes (hex separados por comas)', type: 'text' },
       { key: 'grain', label: 'Suciedad de fotocopia', type: 'opacity' },
-      { key: 'scribbles', label: 'Tachones y garabatos', type: 'toggle' },
     ] },
     { section: 'Tipografías', items: [
       { type: 'font', label: 'Máquina de escribir (lista)', family: 'listFont', weight: 'listWeight', size: 'listSize' },
@@ -94,15 +100,14 @@ export default {
     const layers = [
       h('div', { style: { position: 'absolute', inset: '7mm 6mm 6mm', display: 'flex', flexDirection: 'column' } },
         title,
-        info ? h('div', { text: info.toUpperCase(), style: { ...mono, fontSize: `${s.listSize * 0.9}pt`, textAlign: 'center', margin: '3mm 0 2.5mm', background: s.inkColor, color: s.paperColor, padding: '0.6mm 2mm', alignSelf: 'center', transform: 'rotate(-1deg)', flex: 'none' } }) : null,
+        info ? deco(s, 'decoInfoBar', () => h('div', { text: info.toUpperCase(), style: { ...mono, fontSize: `${s.listSize * 0.9}pt`, textAlign: 'center', margin: '3mm 0 2.5mm', background: s.inkColor, color: s.paperColor, padding: '0.6mm 2mm', alignSelf: 'center', transform: 'rotate(-1deg)', flex: 'none' } })) : null,
         h('div', { style: { flex: '1 1 auto', minHeight: 0, display: 'flex', gap: '5mm' } }, ...cols)),
-      tape({ left: '-4mm', top: '4mm' }, -35),
-      tape({ right: '-5mm', bottom: '6mm' }, -30),
-    ];
-    if (s.scribbles) {
-      layers.push(h('div', { text: '✕', style: { position: 'absolute', right: '6mm', bottom: '2mm', fontFamily: fontStack('Caveat'), fontSize: '24pt', color: s.accentColor, transform: 'rotate(8deg)', lineHeight: 1 } }));
-      layers.push(h('div', { text: '★', style: { position: 'absolute', left: '5mm', bottom: '3mm', fontSize: '14pt', color: s.accentColor, transform: 'rotate(-12deg)' } }));
-    }
+      deco(s, 'decoTapeTop', () => tape({ left: '-4mm', top: '4mm' }, -35)),
+      deco(s, 'decoTapeBottom', () => tape({ right: '-5mm', bottom: '6mm' }, -30)),
+      // (proyectos antiguos: «scribbles: false» quitaba el ✕ y la estrella a la vez)
+      s.scribbles === false ? null : deco(s, 'decoX', () => h('div', { text: '✕', style: { position: 'absolute', right: '6mm', bottom: '2mm', fontFamily: fontStack('Caveat'), fontSize: '24pt', color: s.accentColor, transform: 'rotate(8deg)', lineHeight: 1 } })),
+      s.scribbles === false ? null : deco(s, 'decoStar', () => h('div', { text: '★', style: { position: 'absolute', left: '5mm', bottom: '3mm', fontSize: '14pt', color: s.accentColor, transform: 'rotate(-12deg)' } })),
+    ].filter(Boolean);
     // Suciedad de fotocopia: una sola imagen SVG con puntos (muchas capas de
     // degradado dejan el PNG en blanco al exportar).
     const r2 = seeded(7);

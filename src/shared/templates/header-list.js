@@ -3,7 +3,7 @@
 // una columna con filas alternas resaltadas y barra lateral opcional.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, splitColumns, fitList } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, splitColumns, fitList, deco } from './common.js';
 
 export default {
   id: 'header-list',
@@ -54,6 +54,11 @@ export default {
     sidebarWidth: 1.2,
   },
 
+  decorations: [
+    { key: 'showSidebar', label: 'Barra vertical a la izquierda' },
+    { key: 'titleShadow', label: 'Sombra del título' },
+  ],
+
   presets: [
     { name: 'Cielo (muestra)', style: {} },
     { name: 'Medianoche', style: {
@@ -94,7 +99,6 @@ export default {
       { key: 'titleText', label: 'Título', type: 'text', help: PLACEHOLDER_HELP },
       { key: 'infoText', label: 'Línea de datos', type: 'text', help: PLACEHOLDER_HELP },
       { key: 'infoUppercase', label: 'Línea de datos en mayúsculas', type: 'toggle' },
-      { key: 'titleShadow', label: 'Sombra en el título', type: 'toggle' },
       { key: 'useShortTitles', label: 'Usar títulos abreviados', type: 'toggle' },
       { key: 'durationFormat', label: 'Duraciones', type: 'select', options: [{ value: 'mm:ss', label: '03:04' }, { value: 'm:ss', label: '3:04' }] },
       TOTAL_FORMAT_CONTROL,
@@ -103,7 +107,6 @@ export default {
       { key: 'rowAlternate', label: 'Filas resaltadas', type: 'select', options: [
         { value: 'odd', label: 'Impares (1, 3, 5…)' }, { value: 'even', label: 'Pares (2, 4, 6…)' }, { value: 'none', label: 'Ninguna' }] },
       { key: 'rowRounded', label: 'Filas redondeadas', type: 'toggle' },
-      { key: 'showSidebar', label: 'Barra vertical a la izquierda', type: 'toggle' },
       { key: 'sidebarWidth', label: 'Grosor de la barra', type: 'number', min: 0.4, max: 4, step: 0.1, unit: 'mm', when: (s) => s.showSidebar },
     ] },
     { section: 'Imagen de cabecera', items: [
@@ -232,7 +235,7 @@ export default {
           height: `calc(100% - ${listTop + s.marginBottom}mm)`, background: s.sidebarColor, borderRadius: `${sideW}mm`,
         },
       });
-      panel.appendChild(bar);
+      panel.appendChild(deco(s, 'showSidebar', bar));
       // Tras montar, recorta la barra al alto ocupado por las filas.
       ctx.afterMount.push(() => {
         const lasts = cols > 1 ? columnEls.map((c) => c.lastElementChild).filter(Boolean) : [rows.lastElementChild].filter(Boolean);

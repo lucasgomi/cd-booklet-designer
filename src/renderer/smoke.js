@@ -146,6 +146,27 @@ export async function runSmoke({ commands, showTab }) {
     await wait(1200);
   });
   report.dropImage = store.state.images.stickers.length - stickersBefore;
+  // Adornos modulares: ocultar el ✕ del Fanzine pinchándolo y la estrella desde Diseño.
+  await step('13-adornos', async () => {
+    switchTemplate('fanzine');
+    showTab('design');
+    await wait(500);
+    const x = document.querySelector('#sheet-host [data-deco="decoX"]');
+    const r = x.getBoundingClientRect();
+    x.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.x + r.width / 2, clientY: r.y + r.height / 2 }));
+    await wait(200);
+    [...document.querySelectorAll('#deco-menu button')].find((b) => /ocultar/i.test(b.textContent)).click();
+    await wait(300);
+    const starToggle = [...document.querySelectorAll('#tab-design .switch')].find((l) => /Estrella/.test(l.textContent));
+    starToggle.querySelector('input').click();
+    await wait(500);
+  });
+  report.adornos = {
+    x: !!document.querySelector('#sheet-host [data-deco="decoX"]'),
+    star: !!document.querySelector('#sheet-host [data-deco="decoStar"]'),
+    tape: !!document.querySelector('#sheet-host [data-deco="decoTapeTop"]'),
+  };
+  await exp('png', 'fanzine-sin-adornos');
   // Plantillas propias: guardar, listar y borrar.
   const name = `Prueba ${Date.now()}`;
   const file = await window.api.saveTemplate({ name, templateId: store.state.templateId, style: currentStyle(store.state), customFonts: [] });

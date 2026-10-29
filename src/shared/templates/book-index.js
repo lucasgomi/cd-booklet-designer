@@ -2,7 +2,7 @@
 // romanos, puntos hasta la «página» (la duración), papel con grano.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, toRoman, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize, deco } from './common.js';
 
 // Grano de papel: ruido SVG como imagen de fondo.
 const GRAIN = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>')}")`;
@@ -42,6 +42,11 @@ export default {
     columns: 'auto',
   },
 
+  decorations: [
+    { key: 'decoOrnament', label: 'Adorno — ❦ —' },
+    { key: 'grain', label: 'Grano de papel' },
+  ],
+
   presets: [
     { name: 'Primera edición', style: {} },
     { name: 'Bosque en blanco y negro', style: { paperColor: '#E9E7E2', textColor: '#1E1E1E', dimColor: '#7B7B78', accentColor: '#1E1E1E', grainOpacity: 0.28, useBgImage: true, grayscale: true, imageHeight: 18, titleSize: 16, listSize: 6.2 } },
@@ -55,7 +60,6 @@ export default {
       { key: 'textColor', label: 'Texto', type: 'color' },
       { key: 'dimColor', label: 'Puntos y páginas', type: 'color' },
       { key: 'accentColor', label: 'Capítulos y adornos', type: 'color' },
-      { key: 'grain', label: 'Grano de papel', type: 'toggle' },
       { key: 'grainOpacity', label: 'Intensidad del grano', type: 'opacity', when: (s) => s.grain },
     ] },
     { section: 'Imagen', items: [
@@ -130,7 +134,7 @@ export default {
       style: { fontFamily: fontStack(s.titleFont), fontWeight: s.titleWeight, fontStyle: s.italicTitle ? 'italic' : 'normal', fontSize: `${s.titleSize}pt`, color: s.textColor, textAlign: 'center', lineHeight: 1.05, margin: '1.5mm 0 1mm', flex: 'none', textWrap: 'balance' },
     }),
     info ? h('div', { text: info, style: small }) : null,
-    h('div', { text: '— ❦ —', style: { ...serif, color: s.accentColor, textAlign: 'center', margin: '1.8mm 0 2.4mm', flex: 'none' } }),
+    deco(s, 'decoOrnament', () => h('div', { text: '— ❦ —', style: { ...serif, color: s.accentColor, textAlign: 'center', margin: '1.8mm 0 2.4mm', flex: 'none' } })) || h('div', { style: { height: '2.4mm', flex: 'none' } }),
     columnize(list, listColumns(s)),
     footer ? h('div', { text: footer, style: { ...serif, fontStyle: 'italic', textAlign: 'center', marginTop: '2mm', color: s.dimColor, flex: 'none' } }) : null);
 

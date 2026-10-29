@@ -2,7 +2,7 @@
 // etiqueta) y la lista repartida en Cara A y Cara B.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, deco } from './common.js';
 
 export default {
   id: 'vinyl',
@@ -39,6 +39,10 @@ export default {
     autoRowHeight: true,
     rowHeight: 3,
   },
+
+  decorations: [
+    { key: 'decoDisc', label: 'Disco de vinilo' },
+  ],
 
   presets: [
     { name: 'Setentas', style: {} },
@@ -149,6 +153,6 @@ export default {
     }, titleBlock, h('div', { style: { flex: '1 1 auto', minHeight: 0, display: 'flex', gap: '5mm' } },
       column(fillTemplate(s.sideA, values), tracks.slice(0, half)), column(fillTemplate(s.sideB, values), tracks.slice(half))));
 
-    return h('div', { style: { position: 'absolute', inset: 0, background: s.bgColor, overflow: 'hidden' } }, vinyl, sleeveEl, lists);
+    return h('div', { style: { position: 'absolute', inset: 0, background: s.bgColor, overflow: 'hidden' } }, deco(s, 'decoDisc', vinyl), sleeveEl, lists);
   },
 };

@@ -4,7 +4,8 @@ import { renderFitted, mountSheet, analyzeSheet, FIT_MIN_SCALE, h } from '../sha
 import { sheetWidth, PANEL_MM, currentStyle } from '../shared/model.js';
 import { totalSeconds, formatTotal, CD_LIMIT_SECONDS } from '../shared/time.js';
 import { getSelectedSticker, setSelectedSticker } from './panels/images.js';
-import { button } from './ui.js';
+import { button, toast } from './ui.js';
+import { getTemplate } from '../shared/templates/index.js';
 
 const PX_PER_MM = 96 / 25.4;
 
@@ -35,7 +36,7 @@ export function initPreview({ selectionChanged, editTrack }) {
   new ResizeObserver(() => { if (autoFit) fit(); }).observe(canvas);
   host.addEventListener('pointerdown', onPointerDown);
   canvas.addEventListener('pointerdown', (e) => {
-    if (e.target === canvas || e.target === frame) select(null);
+    if (e.target === canvas || e.target === frame) { select(null); hideDecoMenu(); }
   });
   canvas.addEventListener('wheel', (e) => {
     if (!e.ctrlKey) return;
@@ -110,9 +111,38 @@ function select(id) {
   onSelectionChange();
 }
 
+function hideDecoMenu() {
+  document.getElementById('deco-menu')?.remove();
+}
+
+/** Botón flotante para ocultar el adorno pinchado. */
+function showDecoMenu(decoEl, e) {
+  hideDecoMenu();
+  const key = decoEl.dataset.deco;
+  const tpl = getTemplate(store.state.templateId);
+  const label = tpl.decorations?.find((d) => d.key === key)?.label || 'este adorno';
+  const rect = canvas.getBoundingClientRect();
+  const menu = h('div', {
+    id: 'deco-menu', class: 'deco-menu',
+    style: { left: `${e.clientX - rect.left + canvas.scrollLeft + 8}px`, top: `${e.clientY - rect.top + canvas.scrollTop + 8}px` },
+  }, h('span', { text: label }));
+  menu.appendChild(button('Ocultar', () => {
+    hideDecoMenu();
+    commit((s) => { s.styles[s.templateId] = { ...currentStyle(s), [key]: false }; }, { rebuild: 'design' });
+    toast(`«${label}» oculto. Ctrl+Z para recuperarlo, o en Diseño → Adornos.`, 'ok', 5000);
+  }, { class: 'small primary' }));
+  canvas.appendChild(menu);
+}
+
 function onPointerDown(e) {
+  hideDecoMenu();
   const stickerEl = e.target.closest('.cdb-sticker');
-  if (!stickerEl) { select(null); return; }
+  if (!stickerEl) {
+    select(null);
+    const decoEl = e.target.closest('.cdb-deco');
+    if (decoEl) showDecoMenu(decoEl, e);
+    return;
+  }
   e.preventDefault();
   const id = stickerEl.dataset.stickerId;
   const idx = store.state.images.stickers.findIndex((s) => s.id === id);

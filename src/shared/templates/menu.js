@@ -2,7 +2,7 @@
 // principales y postres, con puntos hasta el «precio» (la duración).
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
+import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, COLUMNS_CONTROL, listColumns, columnize, deco } from './common.js';
 
 export default {
   id: 'menu',
@@ -30,6 +30,11 @@ export default {
     rowHeight: 2.8,
     columns: 'auto',
   },
+
+  decorations: [
+    { key: 'decoOrnament', label: 'Adorno ❦' },
+    { key: 'decoFrame', label: 'Marco' },
+  ],
 
   presets: [
     { name: 'Bistró', style: {} },
@@ -88,9 +93,9 @@ export default {
 
     const footer = fillTemplate(s.footerText, values);
     return h('div', { style: { position: 'absolute', inset: 0, background: s.paperColor } },
-      h('div', { style: { position: 'absolute', inset: '4.5mm', border: `0.25mm solid ${rgba(s.accentColor, 0.6)}` } }),
+      deco(s, 'decoFrame', () => h('div', { style: { position: 'absolute', inset: '4.5mm', border: `0.25mm solid ${rgba(s.accentColor, 0.6)}` } })),
       h('div', { style: { position: 'absolute', inset: '8mm 12mm 6.5mm', display: 'flex', flexDirection: 'column' } },
-        h('div', { text: '❦', style: { textAlign: 'center', color: s.accentColor, fontSize: '10pt', flex: 'none', lineHeight: 1 } }),
+        deco(s, 'decoOrnament', () => h('div', { text: '❦', style: { textAlign: 'center', color: s.accentColor, fontSize: '10pt', flex: 'none', lineHeight: 1 } })),
         h('div', { text: fillTemplate(s.restaurant, values), style: { fontFamily: fontStack(s.titleFont), fontWeight: s.titleWeight, fontSize: `${s.titleSize}pt`, color: s.inkColor, textAlign: 'center', lineHeight: 1.05, flex: 'none', textWrap: 'balance' } }),
         h('div', { text: fillTemplate(s.subtitle, values), style: { ...serif, fontStyle: 'italic', textAlign: 'center', color: s.accentColor, margin: '0.6mm 0 2mm', flex: 'none' } }),
         ...blocks,

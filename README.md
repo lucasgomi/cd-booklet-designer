@@ -106,6 +106,11 @@ Más estéticas:
 Cada plantilla trae **estilos incluidos**: combinaciones de colores y
 letras que se aplican con un clic y se deshacen con Ctrl+Z.
 
+**Adornos modulares**: los adornos de cada plantilla (cintas, tachones,
+estrellas, sellos, el lazo, el abanico, las formas de Bauhaus…) se quitan o
+se dejan **uno a uno** en *Diseño → Adornos*. También se puede pinchar un
+adorno en la vista previa y pulsar «Ocultar» (Ctrl+Z lo recupera).
+
 Todo lo visual se ajusta desde la interfaz:
 - colores, con selector y campo hexadecimal;
 - tipografías de título y de lista, con grosor y tamaño. Se incluyen 28
@@ -218,6 +223,8 @@ src/shared/templates/   una plantilla por archivo
    - `defaults`: los valores iniciales de sus ajustes;
    - `presets` (opcional): estilos de un clic, `[{ name, style }]`;
    - `category` (opcional): el grupo en el que aparece en la interfaz;
+   - `decorations` (opcional): `[{ key, label }]` con los adornos que se pueden
+     ocultar; píntalos con `deco(s, key, elemento)` de `common.js`;
    - `controls`: las secciones y controles del panel de ajustes, con tipos
      `color`, `opacity`, `number`, `font`, `toggle`, `text`, `textarea` y
      `select`. La interfaz se genera sola a partir de ellos;

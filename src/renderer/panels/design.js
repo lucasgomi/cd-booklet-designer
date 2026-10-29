@@ -7,7 +7,7 @@ import { currentStyle } from '../../shared/model.js';
 import { fontCatalog, loadCustomFonts, BUNDLED_FONTS } from '../../shared/fonts.js';
 
 let userTemplates = [];
-const openSections = new Set(['Colores']);
+const openSections = new Set(['Adornos', 'Colores']);
 
 export async function refreshUserTemplates() {
   userTemplates = await window.api.listTemplates();
@@ -159,6 +159,12 @@ export function renderDesignPanel(root) {
   root.appendChild(h('div', { class: 'fit-toggle' },
     toggle(store.state.autoFit !== false, (v) => commit((s) => { s.autoFit = v; }), 'Ajustar la letra de la lista si no cabe'),
     h('small', { class: 'help', text: 'Con discos largos, reduce la letra de toda la lista por igual (hasta el 55 %) para que quepan todas las canciones. El tamaño que elijas abajo es el máximo.' })));
+  if (tpl.decorations?.length) {
+    root.appendChild(collapsible('Adornos', [
+      h('p', { class: 'help', text: 'Quita o deja cada adorno por separado. También puedes pinchar un adorno en la vista previa para ocultarlo.' }),
+      ...tpl.decorations.map((d) => h('div', { class: 'field' }, toggle(style[d.key] !== false, (v) => setStyle(d.key, v, { rebuild: 'design' }), d.label))),
+    ]));
+  }
   root.appendChild(userTemplatesSection());
   for (const sec of tpl.controls) {
     root.appendChild(collapsible(sec.section, sec.items.map((it) => control(it, style)).filter(Boolean)));

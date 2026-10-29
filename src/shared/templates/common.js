@@ -104,3 +104,24 @@ export function columnize(list, cols, gap = '5mm') {
   for (const part of splitColumns(rows, cols)) box.appendChild(fitList(part));
   return box;
 }
+
+// ------------------------------------------------------------------
+// Adornos modulares: cada adorno de una plantilla se puede ocultar por
+// separado. La plantilla los declara en `decorations: [{ key, label }]`
+// (salen como interruptores en Diseño → Adornos) y los pinta con deco().
+// Están activos salvo que el estilo tenga `key: false`.
+
+/**
+ * Devuelve el adorno (marcado para poder ocultarlo con un clic en el
+ * editor) o null si está desactivado. `make` puede ser el elemento o una
+ * función que lo crea.
+ */
+export function deco(s, key, make) {
+  if (s[key] === false) return null;
+  const el = typeof make === 'function' ? make() : make;
+  if (el) {
+    el.classList.add('cdb-deco');
+    el.dataset.deco = key;
+  }
+  return el;
+}

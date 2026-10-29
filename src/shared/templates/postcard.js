@@ -2,7 +2,7 @@
 // reverso de la postal con sello, matasellos y la lista escrita a mano.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns } from './common.js';
+import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns, deco } from './common.js';
 
 export default {
   id: 'postcard',
@@ -30,6 +30,13 @@ export default {
     autoRowHeight: true,
     rowHeight: 3,
   },
+
+  decorations: [
+    { key: 'decoStamp', label: 'Sello' },
+    { key: 'decoPostmark', label: 'Matasellos' },
+    { key: 'decoWaves', label: 'Ondas del matasellos' },
+    { key: 'decoDivider', label: 'Línea entre anverso y reverso' },
+  ],
 
   presets: [
     { name: 'Vintage', style: {} },
@@ -112,7 +119,7 @@ export default {
 
     return h('div', { style: { position: 'absolute', inset: 0, background: s.bgColor, overflow: 'hidden' } },
       front,
-      h('div', { style: { position: 'absolute', left: '6mm', right: '6mm', top: '45.5mm', height: '0.3mm', background: rgba(s.inkColor, 0.25) } }),
-      back, waves, postmark, stamp);
+      deco(s, 'decoDivider', () => h('div', { style: { position: 'absolute', left: '6mm', right: '6mm', top: '45.5mm', height: '0.3mm', background: rgba(s.inkColor, 0.25) } })),
+      back, deco(s, 'decoWaves', waves), deco(s, 'decoPostmark', postmark), deco(s, 'decoStamp', stamp));
   },
 };

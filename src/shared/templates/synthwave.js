@@ -2,7 +2,7 @@
 // perspectiva, título de neón y lista en un panel oscuro.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns } from './common.js';
+import { TEXT_EXTRAS, rowControls, rowSizing, fitTitle, fitList, splitColumns, deco } from './common.js';
 
 export default {
   id: 'synthwave',
@@ -31,6 +31,11 @@ export default {
     autoRowHeight: true,
     rowHeight: 2.6,
   },
+
+  decorations: [
+    { key: 'decoSun', label: 'Sol a rayas' },
+    { key: 'decoGrid', label: 'Cuadrícula del suelo' },
+  ],
 
   presets: [
     { name: 'Outrun', style: {} },
@@ -76,13 +81,13 @@ export default {
       },
     });
     const floor = h('div', { style: { position: 'absolute', left: 0, right: 0, top: `${horizon}mm`, bottom: 0, background: s.floorColor, overflow: 'hidden', perspective: '30mm' } },
-      h('div', {
+      deco(s, 'decoGrid', () => h('div', {
         style: {
           position: 'absolute', left: '-60mm', right: '-60mm', top: '-4mm', height: '160mm', transformOrigin: '50% 0', transform: 'rotateX(62deg)',
           backgroundImage: `linear-gradient(${s.gridColor} 0.35mm, transparent 0.35mm), linear-gradient(90deg, ${s.gridColor} 0.35mm, transparent 0.35mm)`,
           backgroundSize: '8mm 8mm', opacity: 0.9,
         },
-      }),
+      })),
       h('div', { style: { position: 'absolute', inset: 0, background: `linear-gradient(${rgba(s.gridColor, 0.35)}, transparent 20%)` } }));
 
     const titleText = fillTemplate(s.titleText, values);
@@ -111,6 +116,6 @@ export default {
     h('div', { style: { flex: '1 1 auto', minHeight: 0, display: 'flex', gap: '4mm' } }, ...cols));
 
     return h('div', { style: { position: 'absolute', inset: 0, background: `linear-gradient(${s.skyTop}, ${s.skyBottom} ${horizon}mm)`, overflow: 'hidden' } },
-      sun, floor, title, panel);
+      deco(s, 'decoSun', sun), floor, title, panel);
   },
 };

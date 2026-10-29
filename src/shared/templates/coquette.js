@@ -2,7 +2,7 @@
 // título caligráfico y la lista centrada en cursiva.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, toRoman, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize } from './common.js';
+import { TOTAL_FORMAT_CONTROL, COLUMNS_CONTROL, listColumns, columnize, deco } from './common.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -88,6 +88,13 @@ export default {
     columns: 'auto',
   },
 
+  decorations: [
+    { key: 'showBow', label: 'Lazo' },
+    { key: 'showPearls', label: 'Perlas del borde' },
+    { key: 'scallops', label: 'Borde festoneado' },
+    { key: 'decoHearts', label: 'Corazones ♡ ♡ ♡ bajo el título' },
+  ],
+
   presets: [
     { name: 'Rosa ballet', style: {} },
     { name: 'Lazo negro', style: { bgColor: '#F4EDE8', cardColor: '#FFFFFF', textColor: '#2B2B2B', titleColor: '#111111', accentColor: '#9A9A9A', bowColor: '#1E1E1E', bowShade: '#000000' } },
@@ -126,9 +133,6 @@ export default {
       TOTAL_FORMAT_CONTROL,
     ] },
     { section: 'Adornos y espaciado', items: [
-      { key: 'showBow', label: 'Lazo', type: 'toggle' },
-      { key: 'showPearls', label: 'Perlas en el borde', type: 'toggle' },
-      { key: 'scallops', label: 'Borde festoneado', type: 'toggle' },
       { key: 'cardInset', label: 'Margen de la tarjeta', type: 'number', min: 2, max: 20, step: 0.5, unit: 'mm' },
       { key: 'autoRowHeight', label: 'Altura de fila automática', type: 'toggle' },
       { key: 'rowHeight', label: 'Altura de fila', type: 'number', min: 2, max: 8, step: 0.1, unit: 'mm', when: (s) => !s.autoRowHeight },
@@ -161,14 +165,14 @@ export default {
     const footer = fillTemplate(s.footerText, values);
     const ornament = (s.separator || '♡');
     const content = h('div', {
-      style: { position: 'absolute', inset: `${s.showBow ? 11.5 : 5}mm 6mm 5mm`, display: 'flex', flexDirection: 'column' },
+      style: { position: 'absolute', inset: `${s.showBow !== false ? 11.5 : 5}mm 6mm 5mm`, display: 'flex', flexDirection: 'column' },
     },
     h('div', {
       text: titleCase(fillTemplate(s.titleText, values), s.titleCase),
       style: { fontFamily: fontStack(s.titleFont), fontWeight: s.titleWeight, fontSize: `${s.titleSize}pt`, color: s.titleColor, lineHeight: 0.95, textAlign: 'center', flex: 'none', textWrap: 'balance', textTransform: 'none' },
     }),
     info ? h('div', { text: info, style: { ...small, marginTop: '0.6mm' } }) : null,
-    h('div', { text: `${ornament}  ${ornament}  ${ornament}`, style: { ...small, letterSpacing: '0.1em', color: s.accentColor, marginTop: '0.8mm' } }),
+    deco(s, 'decoHearts', () => h('div', { text: `${ornament}  ${ornament}  ${ornament}`, style: { ...small, letterSpacing: '0.1em', color: s.accentColor, marginTop: '0.8mm' } })),
     columnize(list, listColumns(s)),
     footer ? h('div', { text: footer, style: { ...small, letterSpacing: '0.12em', textTransform: 'none', fontStyle: 'italic', fontSize: `${s.infoSize * 1.1}pt` } }) : null);
 
@@ -182,13 +186,13 @@ export default {
       },
     },
     h('div', { style: { position: 'absolute', inset: '3.2mm', border: `0.25mm solid ${rgba(s.accentColor, 0.7)}`, borderRadius: '2mm' } }),
-    ...(s.showPearls ? pearls(s.accentColor) : []),
+    ...(s.showPearls === false ? [] : pearls(s.accentColor).map((p) => deco(s, 'showPearls', p))),
     content);
 
     const root = h('div', { style: { position: 'absolute', inset: 0, background: s.bgColor } }, card);
-    if (s.showBow) {
-      root.appendChild(h('div', { style: { position: 'absolute', left: '50%', top: `${s.cardInset - 3.5}mm`, transform: 'translateX(-50%)', filter: `drop-shadow(0 0.4mm 0.6mm ${rgba('#000000', 0.18)})` } },
-        bow(s.bowColor, s.bowShade, 22)));
+    if (s.showBow !== false) {
+      root.appendChild(deco(s, 'showBow', h('div', { style: { position: 'absolute', left: '50%', top: `${s.cardInset - 3.5}mm`, transform: 'translateX(-50%)', filter: `drop-shadow(0 0.4mm 0.6mm ${rgba('#000000', 0.18)})` } },
+        bow(s.bowColor, s.bowShade, 22))));
     }
     return root;
   },

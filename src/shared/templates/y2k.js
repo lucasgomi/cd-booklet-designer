@@ -2,7 +2,7 @@
 // lista en un panel de cristal con números en burbujas.
 import { h, fontStack, rgba } from '../dom.js';
 import { fillTemplate, PLACEHOLDER_HELP } from '../text.js';
-import { TOTAL_FORMAT_CONTROL } from './common.js';
+import { TOTAL_FORMAT_CONTROL, deco } from './common.js';
 
 const SPARKLES = [[8, 9, 9], [104, 14, 12], [92, 4, 6], [14, 40, 6], [110, 52, 7], [6, 104, 10], [112, 108, 8], [60, 3, 5]];
 
@@ -43,6 +43,10 @@ export default {
     rowHeight: 3,
   },
 
+  decorations: [
+    { key: 'sparkles', label: 'Destellos ✦' },
+  ],
+
   presets: [
     { name: 'Holográfico', style: {} },
     { name: 'Chicle', style: { holo1: '#FF9ACB', holo2: '#FFD1EC', holo3: '#FF6FB5', holo4: '#FFE6F4', chrome2: '#D0479B', outlineColor: '#6B0F45', textColor: '#6B0F45', bubbleColor: '#6B0F45' } },
@@ -64,7 +68,6 @@ export default {
       { key: 'textColor', label: 'Texto', type: 'color' },
       { key: 'bubbleColor', label: 'Burbujas de los números', type: 'color' },
       { key: 'bubbleTextColor', label: 'Números', type: 'color' },
-      { key: 'sparkles', label: 'Destellos', type: 'toggle' },
       { key: 'sparkleColor', label: 'Color de los destellos', type: 'color', when: (s) => s.sparkles },
     ] },
     { section: 'Tipografías', items: [
@@ -158,7 +161,7 @@ export default {
     const layers = [content];
     if (s.sparkles) {
       for (const [x, y, size] of SPARKLES) {
-        layers.unshift(h('div', { text: '✦', style: { position: 'absolute', left: `${x}mm`, top: `${y}mm`, fontSize: `${size}pt`, color: s.sparkleColor, textShadow: `0 0 1.5mm ${rgba(s.sparkleColor, 0.9)}`, lineHeight: 1 } }));
+        layers.unshift(deco(s, 'sparkles', h('div', { text: '✦', style: { position: 'absolute', left: `${x}mm`, top: `${y}mm`, fontSize: `${size}pt`, color: s.sparkleColor, textShadow: `0 0 1.5mm ${rgba(s.sparkleColor, 0.9)}`, lineHeight: 1 } })));
       }
     }
     return h('div', { style: { position: 'absolute', inset: 0, background: bg, overflow: 'hidden' } }, ...layers);
