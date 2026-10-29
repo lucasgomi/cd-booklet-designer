@@ -40,6 +40,10 @@ const FONTS = {
   'monoton': 'Display',
   'vt323': 'Pixel',
   'press-start-2p': 'Pixel',
+  'unifrakturmaguntia': 'Display',
+  'pirata-one': 'Display',
+  'permanent-marker': 'Manuscrita',
+  'rubik-mono-one': 'Display',
 };
 const SUBSETS = ['latin', 'latin-ext'];
 

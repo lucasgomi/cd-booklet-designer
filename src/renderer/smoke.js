@@ -113,7 +113,7 @@ export async function runSmoke({ commands, showTab }) {
   commit((s) => { s.booklet.enabled = false; s.images.stickers = []; s.colorByGroup = false; }, { rebuild: true });
   const only = (await window.api.smokeOnly?.()) || null;
   const ids = ['two-columns', 'setlist', 'lineup', 'terminal', 'notes', 'coquette', 'acid', 'book-index', 'playlist', 'y2k', 'vinyl', 'cassette', 'polaroid',
-    'fanzine', 'brutalist', 'artdeco', 'synthwave', 'bauhaus', 'newspaper', 'boarding', 'gameboy', 'postcard', 'menu'];
+    'fanzine', 'brutalist', 'artdeco', 'synthwave', 'bauhaus', 'newspaper', 'boarding', 'gameboy', 'postcard', 'menu', 'trap-gotico', 'flyer-barrio'];
   for (const id of only || ids) {
     await step(`09-${id}`, () => { switchTemplate(id); showTab('design'); });
     report[`overflow-${id}`] = lastAnalysis;

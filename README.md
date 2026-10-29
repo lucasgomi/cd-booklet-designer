@@ -103,6 +103,15 @@ Más estéticas:
 25. **Carta de restaurante**: entrantes, principales y postres; la duración es el
     precio.
 
+Rap / trap:
+
+26. **Trap gótico**: fondo negro, título en letra gótica cromada, alambre de
+    espino, marco de cadena, cruces y destellos. Estilos Cromo, Sangre, Oro,
+    Hielo y Rosa.
+27. **Flyer de barrio**: cartel fotocopiado con la firma del artista en grafiti
+    (con corona), el título en bandas, una pegatina redonda y la lista en una
+    hoja pegada con cinta. Estilos Fotocopia, Metro, Noche, Chándal y Butano.
+
 Cada plantilla trae **estilos incluidos**: combinaciones de colores y
 letras que se aplican con un clic y se deshacen con Ctrl+Z.
 
@@ -113,8 +122,8 @@ adorno en la vista previa y pulsar «Ocultar» (Ctrl+Z lo recupera).
 
 Todo lo visual se ajusta desde la interfaz:
 - colores, con selector y campo hexadecimal;
-- tipografías de título y de lista, con grosor y tamaño. Se incluyen 28
-  familias de Google Fonts (con cursivas, manuscritas y de píxeles) que funcionan sin conexión, y se puede añadir
+- tipografías de título y de lista, con grosor y tamaño. Se incluyen 32
+  familias de Google Fonts (con cursivas, manuscritas, góticas y de píxeles) que funcionan sin conexión, y se puede añadir
   cualquier otra por su nombre (necesita Internet);
 - textos;
 - márgenes, alto de la cabecera y altura de fila.
