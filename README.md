@@ -112,6 +112,17 @@ Rap / trap:
     (con corona), el título en bandas, una pegatina redonda y la lista en una
     hoja pegada con cinta. Estilos Fotocopia, Metro, Noche, Chándal y Butano.
 
+Radio de Los Santos (inspiradas en la emisora Non Stop Pop de GTA V):
+
+28. **Radio pop FM**: atardecer con sol a rayas y palmeras, el logo redondo de
+    la emisora y la lista en el panel del menú de radio, con la canción que
+    «está sonando» resaltada y un ecualizador. Estilos Atardecer, Medianoche,
+    Playa y Chicle.
+29. **Collage Los Santos**: rejilla de viñetas con bordes negros y trama de
+    cómic, como una portada de videojuego: título con contorno grueso sobre la
+    silueta de la ciudad, palmera, sol, nota musical, estrella y una viñeta
+    con los datos. Estilos Vinewood, Vice, Noche y Desierto.
+
 Cada plantilla trae **estilos incluidos**: combinaciones de colores y
 letras que se aplican con un clic y se deshacen con Ctrl+Z.
 
