@@ -92,6 +92,11 @@ export function loadProject(state, assets = {}, filePath = null) {
   emit({ rebuild: true });
 }
 
+/** Marca el proyecto con cambios sin guardar (p. ej. tras recuperar una copia automática). */
+export function markDirty() {
+  setDirty(true);
+}
+
 export function markSaved(filePath) {
   store.filePath = filePath;
   setDirty(false);

@@ -211,6 +211,24 @@ export async function runSmoke({ commands, showTab, exportLabelsPdf, exportLabel
     report[`overflow-${id}-preset`] = lastAnalysis;
     await exp('png', `plantilla-${id}-${preset.name}`);
   }
+  // Audios: dos WAV de silencio (2 s y 3,5 s) → canciones con su duración.
+  {
+    const wav = (seconds) => {
+      const rate = 8000;
+      const n = Math.round(rate * seconds);
+      const buf = new ArrayBuffer(44 + n);
+      const v = new DataView(buf);
+      const str = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+      str(0, 'RIFF'); v.setUint32(4, 36 + n, true); str(8, 'WAVE'); str(12, 'fmt ');
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true);
+      v.setUint32(28, rate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); str(36, 'data'); v.setUint32(40, n, true);
+      for (let i = 0; i < n; i += 1) v.setUint8(44 + i, 128);
+      return buf;
+    };
+    const { importAudioFiles } = await import('./panels/tracks.js');
+    await importAudioFiles([new File([wav(3.5)], '02 - Segunda Canción.wav', { type: 'audio/wav' }), new File([wav(2)], '01 Primera.wav', { type: 'audio/wav' })]);
+    report.audioImport = store.state.tracks.map((t) => `${t.title} ${t.duration}`).slice(0, 4);
+  }
   await step('10-galeria', async () => { showTab('gallery'); await wait(1500); });
   // Arrastrar y soltar: un .cue (sustituye la lista) y una imagen (sticker).
   const drop = (files) => {

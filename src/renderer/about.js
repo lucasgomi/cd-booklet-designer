@@ -5,10 +5,6 @@ import { THIRD_PARTY } from '../vendor/licenses.js';
 
 let dlg = null;
 
-const item = (n) => h('li', {},
-  h('a', { href: n.url, target: '_blank', rel: 'noopener', text: n.name }),
-  h('span', { class: 'muted', text: ` — ${n.license}` }));
-
 export async function openAbout() {
   dlg?.remove();
   const version = await window.api.appVersion().catch(() => '');
@@ -27,17 +23,14 @@ export async function openAbout() {
     h('h2', { text: `CD Booklet Designer ${version}` }),
     h('p', { text: 'Para diseñar e imprimir libritos y pegatinas de CD. Proyecto personal y gratuito: ' },
       h('a', { href: 'https://github.com/lucasgomi/cd-booklet-designer', target: '_blank', rel: 'noopener', text: 'github.com/lucasgomi/cd-booklet-designer' })),
-    h('h3', { text: 'Tipografías que se descargan' }),
-    h('p', { text: 'Las del explorador de tipografías vienen de Google Fonts, Fontshare (Indian Type Foundry) y Fontsource. '
-      + 'Todas son libres: licencia SIL Open Font License, Apache 2.0, Ubuntu Font License, ITF Free Font License o similares. '
-      + 'Se pueden usar gratis para diseñar e imprimir tus portadas, también si las vendes; lo único que no se permite es vender las propias tipografías. '
-      + 'Cada una muestra su origen y su licencia en el explorador.' }),
-    h('h3', { text: `Tipografías incluidas en la app (${fonts.length})` }),
-    h('p', { class: 'help', text: 'Van dentro de la app para que funcione sin internet. Se redistribuyen con su licencia, como exige.' }),
-    h('ul', { class: 'about-list' }, ...fonts.map(item)),
+    h('p', { text: 'Código propio con licencia MIT.' }),
+    h('h3', { text: 'Tipografías' }),
+    h('p', { text: `Incluidas en la app: ${fonts.length} tipografías libres (${fonts.filter((n) => /OFL/.test(n.license)).length} con licencia SIL Open Font License y ${fonts.filter((n) => !/OFL/.test(n.license)).length} con Apache 2.0), que se redistribuyen con su licencia. `
+      + 'Las que se descargan al elegirlas (Google Fonts, Fontshare y Fontsource) también son libres: se pueden usar gratis para diseñar e imprimir tus portadas, aunque las vendas; lo único que no se permite es vender las tipografías. El explorador muestra el origen y la licencia de cada una.' }),
     h('h3', { text: 'Bibliotecas' }),
-    h('ul', { class: 'about-list' }, ...libs.map(item),
-      h('li', {}, h('a', { href: 'https://www.electronjs.org', target: '_blank', rel: 'noopener', text: 'Electron' }), h('span', { class: 'muted', text: ' — MIT (app de escritorio; su licencia y la de Chromium van en la carpeta de instalación)' }))),
+    h('p', {}, ...libs.flatMap((n, i) => [i ? ', ' : '', h('a', { href: n.url, target: '_blank', rel: 'noopener', text: n.name }), ` (${n.license})`]),
+      ' y ', h('a', { href: 'https://www.electronjs.org', target: '_blank', rel: 'noopener', text: 'Electron' }), ' (MIT, en la app de escritorio).'),
+    h('p', {}, h('a', { href: 'https://github.com/lucasgomi/cd-booklet-designer/blob/main/THIRD-PARTY-NOTICES.md', target: '_blank', rel: 'noopener', text: 'Lista completa de avisos de terceros' })),
     showFull, full,
     h('div', { class: 'toolbar about-actions' }, close));
   close.addEventListener('click', () => dlg.close());

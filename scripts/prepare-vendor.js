@@ -150,6 +150,38 @@ for (const lib of ['jsbarcode', 'qrcode-generator', 'sortablejs', 'html-to-image
 fs.writeFileSync(path.join(vendor, 'THIRD-PARTY-LICENSES.txt'),
   `Licencias de terceros incluidas en CD Booklet Designer\n${'='.repeat(54)}\n\n`
   + notices.map((n) => `${n.name} (${n.license})\n${n.url}\n${'-'.repeat(60)}\n${n.text}\n`).join('\n\n'));
+// Resumen en la raíz del repositorio (se regenera con cada npm install).
+const row = (n) => `| [${n.name}](${n.url}) | ${n.license} |`;
+fs.writeFileSync(path.join(root, 'THIRD-PARTY-NOTICES.md'), `# Avisos de terceros
+
+Generado por \`scripts/prepare-vendor.js\`. El código propio de CD Booklet
+Designer es MIT (ver \`LICENSE\`).
+
+La app incluye estas tipografías y bibliotecas de terceros. Sus licencias
+permiten redistribuirlas siempre que vayan acompañadas del texto de la
+licencia. El texto completo de cada una está en
+\`src/vendor/THIRD-PARTY-LICENSES.txt\` (se genera al instalar) y dentro de la
+app, en **ⓘ → Acerca de y licencias**.
+
+Las tipografías que la app descarga al elegirlas (Google Fonts, Fontshare y
+Fontsource) no se redistribuyen: se piden a su origen. Todas son libres para
+uso personal y comercial; lo único que no se permite es vender las propias
+tipografías.
+
+## Tipografías incluidas (${notices.filter((n) => n.kind === 'font').length})
+
+| Tipografía | Licencia |
+| --- | --- |
+${notices.filter((n) => n.kind === 'font').map(row).join('\n')}
+
+## Bibliotecas
+
+| Biblioteca | Licencia |
+| --- | --- |
+${notices.filter((n) => n.kind === 'lib').map(row).join('\n')}
+| [Electron](https://www.electronjs.org) (sólo escritorio; el instalador incluye sus licencias y las de Chromium) | MIT |
+`);
+
 // El texto completo va aparte y se carga sólo al abrir el diálogo de licencias.
 fs.writeFileSync(path.join(vendor, 'licenses-text.js'),
   `// Generado por scripts/prepare-vendor.js\nexport const THIRD_PARTY_TEXT = ${JSON.stringify(fs.readFileSync(path.join(vendor, 'THIRD-PARTY-LICENSES.txt'), 'utf8'))};\n`);

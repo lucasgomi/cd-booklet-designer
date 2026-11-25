@@ -58,6 +58,10 @@ Para montarla en local: `npm run build:web` y servir la carpeta `dist-web/`.
 - *Importar .cue…*: lee títulos, intérpretes, fecha y duraciones. La
   duración de la última pista se calcula leyendo el `.flac` o el `.wav`
   que acompaña al `.cue`.
+- *Añadir audios…* (o arrastrar los archivos a la ventana): con tus `.wav`,
+  `.mp3`, `.flac`, `.m4a`, `.ogg`… crea la lista con la duración exacta de
+  cada uno. El título sale del nombre del archivo: quita el número de pista,
+  la extensión y el «Artista - » si todos lo llevan.
 - Para reordenar, arrastra las filas por el asa `⋮⋮`.
 - Grupos: activa *Colorear los números según el grupo* y elige un color
   para cada grupo (por ejemplo, el álbum de origen).
@@ -210,6 +214,7 @@ discos. También se pueden exportar e importar como archivo
 - ⚠ **Imprime al 100 % / tamaño real.** Nunca uses «Ajustar a la página».
 
 **Arrastrar y soltar**
+- Archivos de audio: se añaden como canciones con su duración.
 - Imágenes sobre la ventana: se añaden como stickers.
 - Un `.cue`: importa las canciones.
 - Un `.cdbook`: abre el proyecto.
@@ -218,22 +223,27 @@ discos. También se pueden exportar e importar como archivo
 - Los proyectos `.cdbook` guardan los datos, los ajustes y las imágenes en
   un solo archivo.
 - Deshacer y rehacer con Ctrl+Z y Ctrl+Y.
+- **Guardado automático**: mientras trabajas se guarda una copia en el
+  equipo o en el navegador. Si cierras sin guardar, o se recarga la página
+  en el móvil, al volver a abrir la app te ofrece recuperarla.
 
 **Pegatina del CD** (pestaña «Pegatina»)
 - Diseño circular para el propio disco, con el agujero central. Se edita
   sobre una vista previa en la que se pueden arrastrar los textos: los rectos
   se mueven y los curvos giran alrededor del disco.
 - **Estilos rápidos** para empezar: Portada, CD-R a rotulador, Vinilo,
-  Degradado, Minimal, Lista en anillo y Estilo de la plantilla.
+  Degradado, Minimal, Lista en anillo, Neón, Retro 70s, Arcoíris,
+  Holográfico, Gótico, Brutalista, Disco con foto y Estilo de la plantilla.
 - **Fondo**:
   - Fuentes: la portada, una imagen tuya (con zoom y posición), el estilo
     de la plantilla, un color liso o un degradado (lineal, del centro o
     cónico).
-  - Acabados: CD-R plateado o vinilo con surcos.
+  - Acabados: CD-R plateado, vinilo con surcos, rayos de sol de los 70,
+    anillos de dos colores, arcoíris u holográfico.
   - Se puede oscurecer para que los textos se lean bien.
 - **Textos**: tantos como quieras, rectos o en curva (arriba o abajo).
   - Cada uno con su tipografía, grosor, tamaño, color, opacidad, mayúsculas,
-    cursiva, contorno, espaciado y giro.
+    cursiva, contorno, resplandor de neón, espaciado y giro.
   - Admiten los campos `{titulo}`, `{artista}`, etc.
 - **Lista de canciones**: en anillos alrededor del agujero, que se reparten
   en varias vueltas si no cabe; a los lados; o debajo. Con o sin duraciones.
@@ -267,6 +277,9 @@ discos. También se pueden exportar e importar como archivo
 
 ## Licencias
 
+- **El código de la app** es MIT (ver `LICENSE`). Las tipografías y
+  bibliotecas de terceros tienen sus propias licencias: ver
+  `THIRD-PARTY-NOTICES.md`.
 - **Tipografías incluidas en la app** (73): licencia SIL Open Font License
   1.1, salvo 3 con Apache 2.0. Ambas permiten redistribuirlas, también
   dentro de una app, siempre que vayan acompañadas de su licencia.

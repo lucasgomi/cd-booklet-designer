@@ -2,7 +2,7 @@
 import { store, commit } from '../store.js';
 import { h, section, button, toggle, colorInput, toast } from '../ui.js';
 import { parseDuration, formatDuration, totalSeconds, formatTotal, CD_LIMIT_SECONDS } from '../../shared/time.js';
-import { parsePastedText, parseCue, cueToTracks, makeTrack } from '../../shared/tracklist.js';
+import { parsePastedText, parseCue, cueToTracks, makeTrack, titlesFromFilenames } from '../../shared/tracklist.js';
 import { syncGroups } from '../../shared/model.js';
 
 let summaryEl = null;
@@ -87,6 +87,7 @@ export function renderTracksPanel(root, { openPaste }) {
       }),
       button('Pegar lista…', openPaste),
       button('Importar .cue…', importCue),
+      button('Añadir audios…', pickAudioFiles, { title: 'Elige tus archivos de audio (wav, mp3, flac, m4a, ogg…): se crea la lista con sus duraciones' }),
       button('Vaciar', () => {
         if (state.tracks.length && confirm('¿Borrar todas las canciones?')) commit((s) => { s.tracks = []; }, { rebuild: 'tracks' });
       }, { class: 'danger' })),
@@ -108,6 +109,43 @@ export function renderTracksPanel(root, { openPaste }) {
       }, { rebuild: 'tracks' });
     },
   });
+}
+
+function pickAudioFiles() {
+  const input = h('input', { type: 'file', accept: 'audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg,.opus,.aiff,.aif', multiple: true });
+  input.addEventListener('change', () => importAudioFiles([...input.files]));
+  input.click();
+}
+
+/** Duración de un archivo de audio (en segundos) leyendo sus metadatos. */
+function audioDuration(file) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const audio = new Audio();
+    const done = (v) => { URL.revokeObjectURL(url); resolve(v); };
+    audio.preload = 'metadata';
+    audio.onloadedmetadata = () => done(Number.isFinite(audio.duration) ? Math.round(audio.duration) : null);
+    audio.onerror = () => done(null);
+    setTimeout(() => done(null), 15000);
+    audio.src = url;
+  });
+}
+
+/** Crea canciones a partir de archivos de audio: título del nombre y duración real. */
+export async function importAudioFiles(files) {
+  const audios = files.filter((f) => f.type.startsWith('audio/') || /\.(wav|mp3|flac|m4a|aac|ogg|opus|aiff?)$/i.test(f.name));
+  if (!audios.length) return;
+  toast(`Leyendo ${audios.length} archivo${audios.length === 1 ? '' : 's'} de audio…`, 'info', 20000);
+  const byName = new Map(audios.map((f) => [f.name, f]));
+  const items = titlesFromFilenames(audios.map((f) => f.name));
+  const durations = await Promise.all(items.map((i) => audioDuration(byName.get(i.name))));
+  const tracks = items.map((i, k) => makeTrack(i.title, durations[k]));
+  const missing = durations.filter((d) => d == null).length;
+  const replace = !store.state.tracks.length || confirm(`${tracks.length} canciones leídas. ¿Sustituir la lista actual?\n(Cancelar = añadirlas al final)`);
+  commit((s) => { s.tracks = replace ? tracks : [...s.tracks, ...tracks]; }, { rebuild: true });
+  toast(missing
+    ? `${tracks.length} canciones añadidas. ${missing} sin duración (formato que este navegador no lee): complétala a mano.`
+    : `${tracks.length} canciones añadidas con su duración. Revisa los títulos por si sobra algo del nombre del archivo.`, missing ? 'warn' : 'ok', 7000);
 }
 
 async function importCue() {

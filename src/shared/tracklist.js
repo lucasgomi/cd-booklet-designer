@@ -125,3 +125,26 @@ export function cueToTracks(cue, fileDurations = {}) {
   }
   return { disc: { artist: cue.artist, title: cue.title, date: cue.date }, tracks, missing };
 }
+
+/**
+ * Títulos a partir de nombres de archivo de audio:
+ * «06 Artista - Canción.wav» → «Canción» si todos llevan el mismo «Artista - »;
+ * quita la extensión, el número de pista inicial y los guiones bajos.
+ * Devuelve [{ name, title, number }] ordenado por número de pista (o por nombre).
+ */
+export function titlesFromFilenames(names) {
+  const items = names.map((name) => {
+    let t = name.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/_/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    const num = /^(?:\d{1,2}[-.]\s?)?(\d{1,3})(?:\s*[-.)_]\s*|\s+)(?=\S)/.exec(t);
+    let number = null;
+    if (num) { number = Number(num[1]); t = t.slice(num[0].length); }
+    return { name, title: t, number };
+  });
+  // Prefijo «Artista - » común a todos.
+  const prefix = /^(.+?)\s+[-–—]\s+/.exec(items[0]?.title || '')?.[0];
+  if (prefix && items.length > 1 && items.every((i) => i.title.startsWith(prefix))) {
+    for (const i of items) i.title = i.title.slice(prefix.length);
+  }
+  const numbered = items.every((i) => i.number != null);
+  return items.sort((a, b) => (numbered ? a.number - b.number : 0) || a.name.localeCompare(b.name, 'es', { numeric: true }));
+}

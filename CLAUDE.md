@@ -82,7 +82,11 @@ de la misma app**, y las dos son igual de importantes:
     `fetchFontCss` en `src/shared/fonts.js`. Si añades un origen, añade
     también sus dominios a la CSP de `src/renderer/index.html` y de
     `src/print/print.html`.
-- **Licencias**: `prepare-vendor.js` genera `THIRD-PARTY-LICENSES.txt` y la
+- **Guardado automático**: `src/renderer/autosave.js` guarda en IndexedDB
+  cada sesión con cambios y ofrece recuperarla al arrancar. Está desactivado
+  en la prueba automática.
+- **Licencias**: el código propio es MIT (`LICENSE`). `prepare-vendor.js` genera
+  `THIRD-PARTY-NOTICES.md` (raíz) y `THIRD-PARTY-LICENSES.txt` y la
   lista que muestra el diálogo ⓘ (`src/renderer/about.js`). Si incluyes una
   fuente o una biblioteca nueva dentro de la app, tiene que aparecer ahí
   con su licencia.

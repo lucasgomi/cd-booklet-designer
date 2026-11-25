@@ -26,6 +26,8 @@ export function newLabelText(over = {}) {
     y: -32,
     align: 'center',
     opacity: 1,
+    glow: 0,             // resplandor tipo neón (0 = nada, 1 = mucho)
+    glowColor: '#FFFFFF',
     ...over,
   };
 }
@@ -33,7 +35,7 @@ export function newLabelText(over = {}) {
 export function defaultLabel() {
   return {
     v: 2,
-    background: 'cover', // cover (si no hay, template) | template | image | color | gradient | cdr | vinyl
+    background: 'cover', // cover (si no hay, template) | template | image | color | gradient | cdr | vinyl | rays | rings | rainbow | holo
     color: '#111111',
     color2: '#FF3EA5',
     gradient: 'linear',  // linear | radial | conic
@@ -125,6 +127,53 @@ export const LABEL_PRESETS = [
       newLabelText({ text: '{titulo}', path: 'top', size: 14 }),
       newLabelText({ text: '{artista}', path: 'bottom', size: 10, weight: 600 }),
     ], list: { show: true, place: 'ring', font: '', weight: 600, size: 6, color: '#FFFFFF', durations: false, outline: true, outlineColor: '#000000' } }),
+  },
+  {
+    id: 'neon', name: 'Neón',
+    make: () => ({ background: 'color', color: '#0B0614', dim: 0, edge: { show: true, color: '#3DF2FF', width: 0.45, inset: 3 }, texts: [
+      newLabelText({ text: '{titulo}', font: 'Monoton', weight: 400, size: 20, color: '#FFE3FA', outline: false, glow: 0.9, glowColor: '#FF3EC8', x: 0, y: -33, uppercase: true }),
+      newLabelText({ text: '{artista}', path: 'bottom', font: 'Montserrat', weight: 700, size: 9, color: '#E8FDFF', outline: false, glow: 0.7, glowColor: '#3DF2FF', spacing: 0.2, uppercase: true, offset: 7 }),
+    ] }),
+  },
+  {
+    id: 'retro70', name: 'Retro 70s',
+    make: () => ({ background: 'rays', color: '#F4A300', color2: '#E8551E', angle: 0, dim: 0, hub: { show: true, color: '#F6E7C8', size: 50, border: 0, borderColor: '#000000' }, texts: [
+      newLabelText({ text: '{titulo}', path: 'top', font: 'Shrikhand', weight: 400, size: 17, color: '#FFF4DE', outline: true, outlineColor: '#5A2A12', outlineWidth: 0.22, offset: 4 }),
+      newLabelText({ text: '{artista}', path: 'bottom', font: 'Shrikhand', weight: 400, size: 10, color: '#FFF4DE', outline: true, outlineColor: '#5A2A12', outlineWidth: 0.22, offset: 5 }),
+    ] }),
+  },
+  {
+    id: 'arcoiris', name: 'Arcoíris',
+    make: () => ({ background: 'rainbow', dim: 0, texts: [
+      newLabelText({ text: '{titulo}', path: 'top', font: 'Bagel Fat One', weight: 400, size: 15, color: '#FFFFFF', outline: true, outlineColor: '#2B1B3D', outlineWidth: 0.2 }),
+      newLabelText({ text: '{artista}', path: 'bottom', font: 'Bagel Fat One', weight: 400, size: 10, color: '#FFFFFF', outline: true, outlineColor: '#2B1B3D', outlineWidth: 0.2 }),
+    ] }),
+  },
+  {
+    id: 'holo', name: 'Holográfico',
+    make: () => ({ background: 'holo', dim: 0, texts: [
+      newLabelText({ text: '{titulo}', font: 'Unbounded', weight: 700, size: 18, color: '#2B2A5C', outline: false, x: 0, y: -33, uppercase: true }),
+      newLabelText({ text: '{artista}', path: 'bottom', font: 'Poppins', weight: 600, size: 9, color: '#2B2A5C', outline: false, spacing: 0.15, offset: 6 }),
+    ] }),
+  },
+  {
+    id: 'gotico', name: 'Gótico',
+    make: () => ({ background: 'color', color: '#070707', dim: 0, edge: { show: true, color: '#8A8F98', width: 0.35, inset: 3 }, texts: [
+      newLabelText({ text: '{titulo}', path: 'top', font: 'UnifrakturMaguntia', weight: 400, size: 20, color: '#F0F0F0', outline: false, glow: 0.35, glowColor: '#FFFFFF', offset: 6 }),
+      newLabelText({ text: '{artista}', path: 'bottom', font: 'Rubik Mono One', weight: 400, size: 7, color: '#C9CED6', outline: false, spacing: 0.3, uppercase: true, offset: 7 }),
+    ] }),
+  },
+  {
+    id: 'brutal', name: 'Brutalista',
+    make: () => ({ background: 'color', color: '#FFE600', dim: 0, edge: { show: true, color: '#111111', width: 1.4, inset: 0 }, texts: [
+      newLabelText({ text: '{titulo}', font: 'Archivo Black', weight: 400, size: 18, color: '#111111', outline: false, uppercase: true, x: 0, y: -31, angle: -6 }),
+      newLabelText({ text: '{artista}', font: 'Space Mono', weight: 700, size: 8, color: '#111111', outline: false, uppercase: true, spacing: 0.1, x: 0, y: 33 }),
+      newLabelText({ text: '{pistas} temas · {total}', path: 'bottom', font: 'Space Mono', weight: 400, size: 6, color: '#111111', outline: false, uppercase: true, offset: 5 }),
+    ] }),
+  },
+  {
+    id: 'foto', name: 'Disco con foto',
+    make: () => ({ background: 'cover', dim: 0, texts: [] }),
   },
   {
     id: 'plantilla', name: 'Estilo de la plantilla',

@@ -114,6 +114,20 @@ function backgroundLayer(L, state, assets, S, afterMount) {
       bg.style.background = 'conic-gradient(from 35deg, transparent, rgba(255,255,255,.10) 8%, transparent 16%, transparent 50%, rgba(255,255,255,.10) 58%, transparent 66%), '
         + 'repeating-radial-gradient(circle, #0E0E0E 0 0.32mm, #1C1C1C 0.32mm 0.64mm)';
       break;
+    case 'rays':
+      // Rayos de sol de los 70.
+      bg.style.background = `repeating-conic-gradient(from ${L.angle || 0}deg, ${L.color} 0 7.5deg, ${L.color2} 7.5deg 15deg)`;
+      break;
+    case 'rings':
+      bg.style.background = `repeating-radial-gradient(circle, ${L.color} 0 2.5mm, ${L.color2} 2.5mm 5mm)`;
+      break;
+    case 'rainbow':
+      bg.style.background = 'radial-gradient(circle, #6A4C93 0 38%, #1982C4 38% 47%, #44AA77 47% 56%, #8AC926 56% 65%, #FFCA3A 65% 74%, #FF924C 74% 83%, #FF595E 83% 92%, #E63B7A 92%)';
+      break;
+    case 'holo':
+      bg.style.background = 'radial-gradient(circle, rgba(255,255,255,.55) 30%, transparent 60%), '
+        + 'conic-gradient(from 40deg, #C9B8FF, #A8F0FF, #C8FFD9, #FFF3B0, #FFC2E8, #C9B8FF, #A8F0FF, #FFC2E8, #C9B8FF)';
+      break;
     case 'template': {
       const blank = { artista: '', titulo: '', disco: '', fecha: '', pistas: '', total: '' };
       const sheet = renderSheet(blankState(state), assets, { editor: false, values: blank });
@@ -194,6 +208,7 @@ export function renderLabel(state, assets, { diameter = 117, hole = 41, bleed = 
     if (opts.outline) {
       for (const [k, v] of Object.entries({ stroke: opts.outlineColor, 'stroke-width': fontMm * (opts.outlineWidth ?? 0.16), 'stroke-linejoin': 'round', 'paint-order': 'stroke' })) t.setAttribute(k, v);
     }
+    if (opts.glow > 0) t.setAttribute('filter', `url(#${glowFilter(opts.glow, opts.glowColor, fontMm)})`);
     const tp = svgEl('textPath', { href: `#${id}`, startOffset: full ? '0' : '50%' });
     tp.textContent = opts.uppercase ? raw.toUpperCase() : raw;
     t.appendChild(tp);
@@ -207,6 +222,23 @@ export function renderLabel(state, assets, { diameter = 117, hole = 41, bleed = 
     });
     return t;
   };
+
+  // Resplandor (neón) de los textos en curva: un filtro SVG por texto.
+  const defs = svgEl('defs');
+  svg.appendChild(defs);
+  let glows = 0;
+  function glowFilter(strength, color, fontMm) {
+    const id = `${uid}g${(glows += 1)}`;
+    const f = svgEl('filter', { id, x: '-50%', y: '-50%', width: '200%', height: '200%' });
+    f.appendChild(svgEl('feGaussianBlur', { in: 'SourceAlpha', stdDeviation: (fontMm * 0.18 * strength + 0.15).toFixed(3), result: 'b' }));
+    f.appendChild(svgEl('feFlood', { 'flood-color': color, 'flood-opacity': Math.min(1, 0.6 + strength * 0.4) }));
+    f.appendChild(svgEl('feComposite', { in2: 'b', operator: 'in', result: 'g' }));
+    const merge = svgEl('feMerge');
+    for (const k of ['g', 'g', 'SourceGraphic']) merge.appendChild(svgEl('feMergeNode', { in: k }));
+    f.appendChild(merge);
+    defs.appendChild(f);
+    return id;
+  }
 
   const free = [];
   for (const T of L.texts) {
@@ -225,6 +257,10 @@ export function renderLabel(state, assets, { diameter = 117, hole = 41, bleed = 
       svg.appendChild(g);
     } else {
       const shadow = T.outline ? { WebkitTextStroke: `${(fontMm * (T.outlineWidth ?? 0.16) * 2).toFixed(2)}mm ${T.outlineColor}`, paintOrder: 'stroke fill' } : {};
+      if (T.glow > 0) {
+        const g = fontMm * 0.35 * T.glow;
+        shadow.textShadow = `0 0 ${(g * 0.5).toFixed(2)}mm ${T.glowColor}, 0 0 ${g.toFixed(2)}mm ${T.glowColor}, 0 0 ${(g * 2).toFixed(2)}mm ${T.glowColor}`;
+      }
       free.push(h('div', {
         'data-ltext': T.id,
         text: raw,

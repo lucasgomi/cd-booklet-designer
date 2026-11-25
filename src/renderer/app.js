@@ -1,10 +1,11 @@
 // Punto de entrada de la interfaz: une estado, paneles, vista previa y menús.
-import { store, subscribe, commit, undo, redo, loadProject, markSaved, usedAssets } from './store.js';
+import { store, subscribe, commit, undo, redo, loadProject, markSaved, markDirty, usedAssets } from './store.js';
+import { startAutosave, pendingRecoveries, forget } from './autosave.js';
 import { defaultState, normalizeState, FILE_FORMAT, FILE_VERSION } from '../shared/model.js';
 import { templateCategories } from '../shared/templates/index.js';
 import { loadCustomFonts } from '../shared/fonts.js';
 import { renderDiscPanel } from './panels/disc.js';
-import { renderTracksPanel, updateTracksSummary, setupPasteDialog, importCueResult } from './panels/tracks.js';
+import { renderTracksPanel, updateTracksSummary, setupPasteDialog, importCueResult, importAudioFiles } from './panels/tracks.js';
 import { renderDesignPanel, refreshUserTemplates, switchTemplate } from './panels/design.js';
 import { renderImagesPanel, setSelectedSticker, addStickerFiles } from './panels/images.js';
 import { renderBookletPanel } from './panels/booklet.js';
@@ -262,6 +263,12 @@ function setupDrop() {
       showTab('tracks');
       return;
     }
+    const audios = files.filter((f) => f.type.startsWith('audio/') || /\.(wav|mp3|flac|m4a|aac|ogg|opus|aiff?)$/i.test(f.name));
+    if (audios.length) {
+      showTab('tracks');
+      await importAudioFiles(audios);
+      return;
+    }
     const images = files.filter((f) => f.type.startsWith('image/'));
     if (images.length) {
       const read = await Promise.all(images.map((f) => new Promise((res) => {
@@ -274,7 +281,7 @@ function setupDrop() {
       showTab('images');
       return;
     }
-    toast('Suelta imágenes (stickers), un .cue o un proyecto .cdbook.', 'warn');
+    toast('Suelta archivos de audio (canciones), imágenes (stickers), un .cue o un proyecto .cdbook.', 'warn');
   });
 }
 
@@ -338,6 +345,45 @@ window.api.onUpdate(renderUpdate);
 
 // ---------------------------------------------------------------- inicio
 
+/** Si quedó trabajo sin guardar de otra sesión, ofrece recuperarlo. */
+async function offerRecovery() {
+  const [rec] = await pendingRecoveries();
+  if (!rec) return;
+  const bar = document.createElement('div');
+  bar.className = 'update-bar recover-bar';
+  const when = new Date(rec.at).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
+  const text = document.createElement('span');
+  text.textContent = `💾 Tienes un trabajo sin guardar del ${when}${rec.name ? ` («${rec.name}»)` : ''}.`;
+  const btn = (label, cls, fn) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    if (cls) b.className = cls;
+    b.addEventListener('click', fn);
+    return b;
+  };
+  const spacer = document.createElement('div');
+  spacer.className = 'spacer';
+  bar.append(text, spacer,
+    btn('Recuperar', 'primary', async () => {
+      bar.remove();
+      if (store.dirty && !confirm('Hay cambios sin guardar en el proyecto abierto. ¿Sustituirlos por el trabajo recuperado?')) return;
+      try {
+        const parsed = JSON.parse(rec.data);
+        const state = normalizeState(parsed.state);
+        await loadCustomFonts(state.customFonts);
+        setSelectedSticker(null);
+        loadProject(state, parsed.assets || {}, rec.path || null);
+        markDirty();
+        await forget(rec.session);
+        toast('Trabajo recuperado. Guárdalo para no perderlo.', 'ok', 6000);
+      } catch {
+        toast('No se pudo recuperar la copia.', 'bad');
+      }
+    }),
+    btn('Descartar', '', async () => { bar.remove(); await forget(rec.session); }));
+  $('update-bar').after(bar);
+}
+
 async function start() {
   initPreview({ selectionChanged: () => rebuild('images'), editTrack });
   setupDrop();
@@ -355,6 +401,10 @@ async function start() {
   await document.fonts.ready;
   schedule();
   const smoke = await window.api.smokeDir();
+  if (!smoke) {
+    startAutosave(serialize, suggestedName);
+    offerRecovery();
+  }
   if (smoke) {
     const { runSmoke } = await import('./smoke.js');
     runSmoke({ commands, showTab, exportPdf, exportPng, commit, openPaste, exportLabelsPdf, exportLabelPng });

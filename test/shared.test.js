@@ -181,3 +181,16 @@ test('catálogo de Google Fonts', async () => {
   const marker = GOOGLE_FONTS_RAW.find((f) => f[0] === 'Permanent Marker');
   assert.ok(marker && marker[5].includes('graffiti'));
 });
+
+test('títulos a partir de archivos de audio', async () => {
+  const { titlesFromFilenames } = await import('../src/shared/tracklist.js');
+  const a = titlesFromFilenames(['02 - Luces de Neón.wav', '01 Amanecer.mp3', '10_Fin_de_Fiesta.flac']);
+  assert.deepEqual(a.map((x) => x.title), ['Amanecer', 'Luces de Neón', 'Fin de Fiesta']);
+  const b = titlesFromFilenames(['Artista X - Uno.wav', 'Artista X - Dos (Remix).wav']);
+  assert.deepEqual(b.map((x) => x.title).sort(), ['Dos (Remix)', 'Uno']);
+  // Con artistas distintos se respeta el nombre entero.
+  const c = titlesFromFilenames(['Uno - Canción.wav', 'Otro - Tema.wav']);
+  assert.ok(c.some((x) => x.title === 'Uno - Canción'));
+  assert.equal(titlesFromFilenames(['1-03 Disco Dos.m4a'])[0].title, 'Disco Dos');
+  assert.equal(titlesFromFilenames(['#Freemolly (Intro).wav'])[0].title, '#Freemolly (Intro)');
+});
