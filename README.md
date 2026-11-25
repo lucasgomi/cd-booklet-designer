@@ -1,5 +1,8 @@
 # CD Booklet Designer
 
+**🌐 Versión web (sin instalar, también en el móvil):** https://lucasgomi.github.io/cd-booklet-designer/
+**⬇ App para Windows:** https://github.com/lucasgomi/cd-booklet-designer/releases/latest
+
 Aplicación de escritorio para Windows para diseñar e imprimir el librito
 interior de las cajas de CD slim: **120 × 120 mm**, o **240 × 120 mm** si
 va doblado con la portada al lado. Funciona como un editor de plantillas:
