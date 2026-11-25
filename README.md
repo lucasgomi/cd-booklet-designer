@@ -1,6 +1,7 @@
 # CD Booklet Designer
 
 **🌐 Versión web (sin instalar, también en el móvil):** https://lucasgomi.github.io/cd-booklet-designer/
+
 **⬇ App para Windows:** https://github.com/lucasgomi/cd-booklet-designer/releases/latest
 
 Aplicación de escritorio para Windows para diseñar e imprimir el librito
