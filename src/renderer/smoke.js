@@ -158,7 +158,7 @@ export async function runSmoke({ commands, showTab, exportLabelsPdf, exportLabel
   document.querySelector('.font-picker')?.close();
   await step('08-grupos', () => {
     commit((s) => {
-      s.tracks.forEach((t, i) => { t.group = i < 9 ? 'Baño María' : i < 18 ? 'Alv' : 'Tiny Desk'; });
+      s.tracks.forEach((t, i) => { t.group = i < 9 ? 'Cara A' : i < 18 ? 'Cara B' : 'Extras'; });
       s.colorByGroup = true;
       syncGroups(s);
     }, { rebuild: 'tracks' });

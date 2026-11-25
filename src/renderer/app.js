@@ -191,6 +191,8 @@ const commands = {
   'zoom-out': zoomOut,
   'zoom-fit': fit,
   'toggle-safe': toggleSafe,
+  // Móvil: vista previa a media pantalla o casi completa.
+  'toggle-preview': () => { document.body.classList.toggle('big-preview'); setTimeout(fit, 260); },
 };
 
 window.api.onMenu((cmd) => commands[cmd]?.());

@@ -64,8 +64,8 @@ test('el total de la muestra es 1 H 16 MIN', () => {
 
 test('parseCue + cueToTracks calcula duraciones', () => {
   const cue = parseCue(`REM DATE 2024
-PERFORMER "CA7RIEL & Paco Amoroso"
-TITLE "HITS"
+PERFORMER "Artista de Ejemplo"
+TITLE "Grandes Éxitos"
 FILE "disco.flac" WAVE
   TRACK 01 AUDIO
     TITLE "Gimme More"
@@ -79,8 +79,8 @@ FILE "disco.flac" WAVE
     PERFORMER "Otro"
     INDEX 01 05:38:00
 `);
-  assert.equal(cue.artist, 'CA7RIEL & Paco Amoroso');
-  assert.equal(cue.title, 'HITS');
+  assert.equal(cue.artist, 'Artista de Ejemplo');
+  assert.equal(cue.title, 'Grandes Éxitos');
   assert.equal(cue.date, '2024');
   const { tracks, missing } = cueToTracks(cue, { 'disco.flac': 491 });
   // La pista 1 dura hasta el INDEX 00 (pregap) de la 2.
@@ -95,26 +95,26 @@ FILE "disco.flac" WAVE
 });
 
 test('fillTemplate oculta tramos con campos vacíos y limpia separadores', () => {
-  const v = { titulo: 'HITS', disco: '69', fecha: '', pistas: '26', total: '1 H 16 MIN', artista: '' };
-  assert.equal(fillTemplate('{titulo}[ · Nº {disco}][ · {fecha}] · {pistas} PISTAS · {total}', v), 'HITS · Nº 69 · 26 PISTAS · 1 H 16 MIN');
-  assert.equal(fillTemplate('{artista} · {titulo}', v), 'HITS');
-  assert.equal(fillTemplate('✻ {titulo} ✻[ DISCO Nº {disco} ✻]', { ...v, disco: '' }), '✻ HITS ✻');
+  const v = { titulo: 'Éxitos', disco: '69', fecha: '', pistas: '26', total: '1 H 16 MIN', artista: '' };
+  assert.equal(fillTemplate('{titulo}[ · Nº {disco}][ · {fecha}] · {pistas} PISTAS · {total}', v), 'Éxitos · Nº 69 · 26 PISTAS · 1 H 16 MIN');
+  assert.equal(fillTemplate('{artista} · {titulo}', v), 'Éxitos');
+  assert.equal(fillTemplate('✻ {titulo} ✻[ DISCO Nº {disco} ✻]', { ...v, disco: '' }), '✻ Éxitos ✻');
 });
 
 test('stripAccents', () => {
-  assert.equal(stripAccents('Hasta Jesús Tuvo un Mal Día — El Único'), 'Hasta Jesus Tuvo un Mal Dia — El Unico');
+  assert.equal(stripAccents('Canción Única — Él Volverá'), 'Cancion Unica — El Volvera');
   assert.equal(stripAccents('Nº'), 'Nº');
 });
 
 test('abreviaturas propuestas', () => {
-  const c = abbreviationCandidates("Mi Deseo / Bad Bitch (Live at NPR Music's Tiny Desk)");
-  assert.equal(c[0], 'Mi Deseo / Bad Bitch (Tiny Desk)');
-  assert.ok(c.includes('Mi Deseo / Bad Bitch'));
+  const c = abbreviationCandidates("Uno / Dos (Live at the BBC's Maida Vale)");
+  assert.equal(c[0], 'Uno / Dos (Maida Vale)');
+  assert.ok(c.includes('Uno / Dos'));
   assert.ok(c.every((x) => !/[/]…$/.test(x)));
   assert.equal(abbreviationCandidates('Canción (feat. Alguien)')[0], 'Canción');
   assert.equal(abbreviationCandidates('Song - Remastered 2011')[0], 'Song');
-  assert.ok(abbreviationCandidates("Beto's Horns (Fred Remix)").includes("Beto's Horns (Remix)"));
-  assert.ok(!abbreviationCandidates("Mi Deseo / Bad Bitch (Live at NPR Music's Tiny Desk)").includes('Mi Deseo / Bad Bitch (Desk)'));
+  assert.ok(abbreviationCandidates('Ruido Blanco (Club Remix)').includes('Ruido Blanco (Remix)'));
+  assert.ok(!abbreviationCandidates("Volver a Empezar (Live at the BBC's Maida Vale)").includes('Volver a Empezar (Vale)'));
 });
 
 test('comparación de versiones para las actualizaciones', () => {

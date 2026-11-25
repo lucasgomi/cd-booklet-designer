@@ -31,7 +31,9 @@ function pickFile(accept) {
   });
 }
 
-const safeName = (s) => String(s || '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+// Sin tildes: algunos navegadores descartan el nombre si lleva caracteres no ASCII.
+const safeName = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7E]/g, '')
+  .replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
 
 // Con la API de archivos del navegador (Chrome, Edge) «Guardar» sobrescribe
 // el mismo archivo; en los demás, descarga una copia.

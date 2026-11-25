@@ -63,6 +63,54 @@ jobs:
         run: |
           gh release create "$TAG" dist/*.exe dist/latest.yml dist/*.blockmap \
             --title "CD Booklet Designer $TAG" \
+            --notes "Versión web (la misma versión, sin instalar): https://lucasgomi.github.io/cd-booklet-designer/" \
             --target "${{ github.sha }}" \
             --generate-notes \
             --repo "${{ github.repository }}"
+
+  # La web sale siempre a la par que la app de escritorio, con la misma versión.
+  build-web:
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.release != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install
+        run: npm ci
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+
+      - name: Build web
+        env:
+          WEB_VERSION: ${{ inputs.release != '' && inputs.release || github.ref_name }}
+        run: npm run build:web
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-web
+
+  deploy-web:
+    needs: build-web
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

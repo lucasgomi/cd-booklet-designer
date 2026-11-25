@@ -7,7 +7,7 @@ export function stripAccents(s) {
 /**
  * Sustituye {campo} por su valor. Un tramo entre corchetes [ ... ] se
  * omite entero si alguno de sus campos está vacío u oculto, p. ej.
- * "HITS[ · Nº {disco}]". Al final limpia separadores "·" sobrantes.
+ * "Éxitos[ · Nº {disco}]". Al final limpia separadores "·" sobrantes.
  */
 export function fillTemplate(template, values) {
   if (!template) return '';
@@ -45,8 +45,8 @@ export function abbreviationCandidates(title) {
   const feat = /\s*[([]?\s*(feat\.?|ft\.?|featuring|con)\s+[^)\]]*[)\]]?/i;
   if (feat.test(t)) { t = t.replace(feat, ''); push(t); }
 
-  // "(Live at NPR Music's Tiny Desk)" -> "(Tiny Desk)"
-  // (y se quita el posesivo: "NPR Music's Tiny Desk" -> "Tiny Desk").
+  // "(Live at the BBC's Maida Vale)" -> "(Maida Vale)"
+  // (y se quita el posesivo: "the BBC's Maida Vale" -> "Maida Vale").
   t = t.replace(/([([])\s*(live at|live from|live in|en vivo en|en directo en|en vivo desde)\s+/gi, '$1');
   t = t.replace(/([([])[^)\]]*?['’]s\s+/g, '$1');
   push(t);

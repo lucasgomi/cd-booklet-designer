@@ -32,7 +32,7 @@ function bow(color, shade, widthMm) {
   return el;
 }
 
-/** Las letras caligráficas en mayúsculas no se leen: «HITS» -> «Hits». */
+/** Las letras caligráficas en mayúsculas no se leen: «ÉXITOS» -> «Éxitos». */
 function titleCase(text, mode) {
   if (mode === 'lower') return text.toLowerCase();
   if (mode !== 'capitalize') return text;

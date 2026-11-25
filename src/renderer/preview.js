@@ -88,7 +88,9 @@ function applyZoom() {
 export function fit() {
   const W = sheetWidth(store.state) * PX_PER_MM;
   const H = PANEL_MM * PX_PER_MM;
-  const z = Math.min((canvas.clientWidth - 64) / W, (canvas.clientHeight - 64) / H);
+  // Margen alrededor de la hoja: el relleno del lienzo (menor en el móvil) por los dos lados.
+  const pad = 2 * (parseFloat(getComputedStyle(canvas).paddingLeft) || 32);
+  const z = Math.min((canvas.clientWidth - pad) / W, (canvas.clientHeight - pad) / H);
   zoom = Math.max(0.2, Math.min(6, z));
   autoFit = true;
   applyZoom();

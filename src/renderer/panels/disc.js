@@ -5,9 +5,9 @@ import { TOTAL_FORMATS, totalSeconds, formatTotal, CD_LIMIT_SECONDS } from '../.
 import { PLACEHOLDER_HELP } from '../../shared/text.js';
 
 const FIELDS = [
-  { key: 'artist', label: 'Artista', placeholder: 'CA7RIEL & Paco Amoroso', tag: '{artista}' },
-  { key: 'title', label: 'Título del recopilatorio', placeholder: 'HITS', tag: '{titulo}' },
-  { key: 'discNumber', label: 'Número de disco', placeholder: '69', tag: '{disco}' },
+  { key: 'artist', label: 'Artista', placeholder: 'Nombre del artista', tag: '{artista}' },
+  { key: 'title', label: 'Título del recopilatorio', placeholder: 'Grandes Éxitos', tag: '{titulo}' },
+  { key: 'discNumber', label: 'Número de disco', placeholder: '1', tag: '{disco}' },
   { key: 'date', label: 'Fecha', placeholder: 'Octubre 2026', tag: '{fecha}' },
 ];
 

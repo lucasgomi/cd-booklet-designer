@@ -1,36 +1,36 @@
-// Proyecto de ejemplo (el de las muestras). Las imágenes se dibujan al
+// Proyecto de ejemplo (genérico, con canciones inventadas). Las imágenes se dibujan al
 // vuelo para no depender de archivos externos.
 import { defaultState } from '../shared/model.js';
 import { makeTrack, newId } from '../shared/tracklist.js';
 import { parseDuration } from '../shared/time.js';
 import { TEMPLATES } from '../shared/templates/index.js';
 
-const TRACKS = `Gimme More – 3:04
-La Que Puede, Puede – 2:34
-Baby Gangsta – 2:33
-Dumbai – 2:28
-#Tetas – 2:29
-Goo Goo Ga Ga – 3:11
-Sheesh – 2:16
-Impostor – 2:37
-Re Forro – 3:05
-Ay Ay Ay – 3:01
-Pirlo – 2:43
-Cosas Ricas – 2:40
-Vida Loca – 2:35
-Ha Ha – 3:08
-Agua – 2:20
-Mi Diosa – 2:33
-Hasta Jesús Tuvo un Mal Día – 3:15
-Muero – 3:49
-Mi Deseo / Bad Bitch (Live at NPR Music's Tiny Desk) – 4:20
-Baby Gangsta (Live at NPR Music's Tiny Desk) – 3:03
-Supersónico – 2:48
-Soy Increíble – 3:09
-Beto's Horns (Fred Remix) – 3:46
-Lo Quiero Ya! – 3:17
-El Día del Amigo – 2:50
-El Único – 2:32`;
+const TRACKS = `Amanecer – 3:02
+Luces de Neón – 2:58
+Carretera Secundaria – 3:21
+Verano Eterno – 2:47
+Nada Que Perder – 2:45
+Ciudad Dormida – 3:32
+Bailando Sola – 2:39
+El Último Tren – 3:08
+Papel Mojado – 2:51
+Domingo por la Tarde – 3:17
+Fuego Lento – 2:44
+Marea Alta – 3:03
+Desde la Azotea – 2:56
+Kilómetro Cero – 3:09
+Cometas – 2:22
+Todo Irá Bien – 3:18
+Lo Que Nunca Te Dije (Versión Acústica) – 3:25
+Medianoche – 2:41
+Volver a Empezar (Live at the Royal Albert Hall) – 4:06
+Luces de Neón (Live at the Royal Albert Hall) – 3:14
+Satélite – 2:49
+Corazón de Cristal – 3:11
+Ruido Blanco (Remix del Verano) – 3:42
+Sin Prisa – 3:02
+Despedida – 2:55
+Hasta Mañana – 2:37`;
 
 function rng(seed) {
   let s = seed;
@@ -122,17 +122,18 @@ export function drawCover() {
   g.fillStyle = grad;
   g.fillRect(0, 0, s, s);
   g.fillStyle = 'rgba(255,255,255,0.92)';
-  g.font = '800 260px Fraunces';
+  g.font = '800 220px Fraunces';
   g.textAlign = 'center';
-  g.fillText('HITS', s / 2, s / 2 + 40);
+  g.fillText('GRANDES', s / 2, s / 2 - 60);
+  g.fillText('ÉXITOS', s / 2, s / 2 + 170);
   g.font = '500 70px Inter';
-  g.fillText('CA7RIEL & PACO AMOROSO', s / 2, s / 2 + 170);
+  g.fillText('ARTISTA DE EJEMPLO', s / 2, s / 2 + 300);
   return c.toDataURL('image/jpeg', 0.92);
 }
 
 export function exampleProject({ withCover = false } = {}) {
   const state = defaultState();
-  state.disc = { ...state.disc, artist: 'CA7RIEL & Paco Amoroso', title: 'HITS', discNumber: '69', date: '2026' };
+  state.disc = { ...state.disc, artist: 'Artista de Ejemplo', title: 'Grandes Éxitos', discNumber: '1', date: '2026' };
   state.tracks = TRACKS.split('\n').map((l) => {
     const [title, dur] = l.split(' – ');
     return makeTrack(title, parseDuration(dur));

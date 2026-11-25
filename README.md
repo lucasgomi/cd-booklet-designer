@@ -33,7 +33,7 @@ Es la misma app, con estas diferencias:
 - Las plantillas propias se guardan en el navegador.
 - Las tipografías que no vienen incluidas necesitan conexión.
 
-Se publica sola con cada cambio en `main` (workflow «Web (GitHub Pages)»).
+Se publica junto a cada release de escritorio, con el mismo número de versión.
 Para montarla en local: `npm run build:web` y servir la carpeta `dist-web/`.
 
 ## Qué hace
@@ -159,7 +159,7 @@ Todo lo visual se ajusta desde la interfaz:
 Los textos admiten campos: `{artista}`, `{titulo}`, `{disco}`, `{fecha}`,
 `{pistas}` y `{total}`. Lo que va entre `[corchetes]` se oculta si alguno
 de sus campos está vacío u oculto. Por ejemplo, con
-`HITS[ · Nº {disco}]`, si el número de disco está oculto solo se ve `HITS`.
+`Éxitos[ · Nº {disco}]`, si el número de disco está oculto solo se ve `Éxitos`.
 
 *Mis plantillas* guarda tus ajustes visuales para reutilizarlos en otros
 discos. También se pueden exportar e importar como archivo
@@ -176,8 +176,8 @@ discos. También se pueden exportar e importar como archivo
 **Ayudas de diseño**
 - Margen de seguridad de 5 mm visible en el editor. No se imprime.
 - Todos los títulos se pintan al mismo tamaño. Si alguno no cabe, la app
-  avisa y propone una versión abreviada, por ejemplo «(Live at NPR Music's
-  Tiny Desk)» → «(Tiny Desk)». No encoge la letra solo en esa fila.
+  avisa y propone una versión abreviada, por ejemplo «(Live at the BBC's
+  Maida Vale)» → «(Maida Vale)». No encoge la letra solo en esa fila.
 - Las duraciones usan cifras de ancho fijo para que queden alineadas.
 - Avisa si la lista no cabe en la página.
 
