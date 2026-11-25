@@ -13,6 +13,7 @@ import { renderLabelPanel, refreshLabelPreview, exportLabelsPdf, exportLabelPng 
 import { initPreview, schedule, fit, zoomIn, zoomOut, toggleSafe, markTrackRows, fitScale, fitCols } from './preview.js';
 import { exampleProject } from './example.js';
 import { toast } from './ui.js';
+import { openAbout } from './about.js';
 
 const $ = (id) => document.getElementById(id);
 export const WEB_PRINT_HINT = 'En el diálogo de imprimir elige «Guardar como PDF» (o tu impresora), escala 100 % / tamaño real y sin márgenes.';
@@ -83,7 +84,11 @@ $('tabs').addEventListener('click', (e) => {
 export function showTab(name) {
   for (const b of $('tabs').querySelectorAll('button')) b.classList.toggle('active', b.dataset.tab === name);
   for (const n of Object.keys(panels)) $(`tab-${n}`).hidden = n !== name;
-  if (name === 'label') refreshLabelPreview();
+  // En «Pegatina» la vista previa grande muestra la pegatina en vez del librito.
+  const labelMode = name === 'label';
+  document.body.classList.toggle('label-mode', labelMode);
+  $('label-stage').hidden = !labelMode;
+  if (labelMode) requestAnimationFrame(refreshLabelPreview); else schedule();
   if (name === 'gallery' && galleryStale) {
     galleryStale = false;
     panels.gallery();
@@ -191,6 +196,7 @@ const commands = {
   'zoom-out': zoomOut,
   'zoom-fit': fit,
   'toggle-safe': toggleSafe,
+  licenses: openAbout,
   // Móvil: vista previa a media pantalla o casi completa.
   'toggle-preview': () => { document.body.classList.toggle('big-preview'); setTimeout(fit, 260); },
 };

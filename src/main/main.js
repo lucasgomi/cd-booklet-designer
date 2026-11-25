@@ -92,6 +92,7 @@ function buildMenu() {
     { label: 'Ayuda', submenu: [
       { label: 'Buscar actualizaciones…', click: () => checkForUpdates(true) },
       { label: 'Página del proyecto', click: () => shell.openExternal('https://github.com/lucasgomi/cd-booklet-designer') },
+      { label: 'Acerca de y licencias…', click: () => send('licenses') },
       { type: 'separator' },
       { label: `Versión ${app.getVersion()}`, enabled: false },
     ] },

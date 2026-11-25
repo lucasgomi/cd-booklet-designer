@@ -217,7 +217,7 @@ export function renderLabel(state, assets, { diameter = 117, hole = 41, bleed = 
       const top = T.path === 'top';
       const edge = R - (T.offset ?? 4.5);
       const r = top ? edge - fontMm * 0.72 : edge - fontMm * 0.22;
-      const t = arcText(raw, T, { r, top, attrs: { 'data-ltext': T.id } });
+      const t = arcText(raw, T, { r, top, attrs: { 'data-ltext': T.id, 'data-r': r.toFixed(2) } });
       if (!t) continue;
       const g = svgEl('g', { transform: `rotate(${T.angle || 0} ${c} ${c})` });
       g.appendChild(t);

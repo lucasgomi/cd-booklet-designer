@@ -249,15 +249,41 @@ discos. También se pueden exportar e importar como archivo
 - También se exporta la pegatina sola en PNG a 300 ppp.
 
 **Tipografías**
-- Explorador con más de 1.600 familias de Google Fonts y vista previa con tu
-  propio texto. Se abre pinchando en el nombre de cualquier tipografía.
+- Explorador con más de 1.750 familias libres de tres orígenes, con vista
+  previa con tu propio texto. Se abre pinchando en el nombre de cualquier
+  tipografía.
+  - **Google Fonts**: todas las que tienen alfabeto latino.
+  - **Fontshare** (Indian Type Foundry): Satoshi, Clash Display, General
+    Sans, Cabinet Grotesk…
+  - **Fontsource**: las libres que no están en Google, como Redaction,
+    Metropolis, Geist o Iosevka.
 - Filtros por tipo (sin serifa, con serifa, display, manuscritas,
-  monoespaciadas) y por estilo (góticas, grafiti, retro, píxel, futuristas,
-  terror, caligrafía, elegantes, condensadas, máquina de escribir).
-- Se ordenan por popularidad, por nombre o por novedad.
+  monoespaciadas), por estilo (góticas, grafiti, retro, píxel, futuristas,
+  terror, caligrafía, elegantes, condensadas, máquina de escribir) y por
+  origen. Se ordenan por popularidad, por nombre o por novedad.
 - 73 familias vienen incluidas y funcionan sin conexión; las demás se
   descargan al elegirlas.
 - El catálogo se regenera con `node scripts/build-font-catalog.js`.
+
+## Licencias
+
+- **Tipografías incluidas en la app** (73): licencia SIL Open Font License
+  1.1, salvo 3 con Apache 2.0. Ambas permiten redistribuirlas, también
+  dentro de una app, siempre que vayan acompañadas de su licencia.
+- **Bibliotecas incluidas**: JsBarcode, qrcode-generator, SortableJS y
+  html-to-image (MIT), y Electron en la app de escritorio. electron-builder
+  añade al instalador las licencias de Electron y Chromium.
+- `npm install` (`scripts/prepare-vendor.js`) genera
+  `src/vendor/THIRD-PARTY-LICENSES.txt` con el texto de todas ellas. Va
+  dentro de la app y de la web, y se puede ver en **ⓘ → Acerca de y
+  licencias** (en escritorio también en Ayuda).
+- **Tipografías que se descargan**: no se redistribuyen, se piden a su
+  origen al elegirlas.
+  - Las de Google Fonts y Fontsource son libres (OFL, Apache, UFL, CC0…).
+  - Las de Fontshare usan la ITF Free Font License o la OFL.
+  - Todas se pueden usar gratis para diseñar e imprimir portadas, aunque
+    se vendan; lo que no se puede es vender las tipografías en sí.
+  - El explorador muestra el origen y la licencia de cada una.
 
 ## Actualizaciones automáticas
 

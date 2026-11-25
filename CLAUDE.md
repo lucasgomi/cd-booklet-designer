@@ -69,6 +69,13 @@ de la misma app**, y las dos son igual de importantes:
 - **Tipografías**:
   - Las incluidas sin conexión se copian a `src/vendor` con
     `scripts/prepare-vendor.js`, que se ejecuta en `postinstall`.
-  - El catálogo de Google Fonts se regenera con
-    `node scripts/build-font-catalog.js`.
+  - El catálogo (Google Fonts, Fontshare y Fontsource) se regenera con
+    `node scripts/build-font-catalog.js`. Cada origen se carga con
+    `fetchFontCss` en `src/shared/fonts.js`. Si añades un origen, añade
+    también sus dominios a la CSP de `src/renderer/index.html` y de
+    `src/print/print.html`.
+- **Licencias**: `prepare-vendor.js` genera `THIRD-PARTY-LICENSES.txt` y la
+  lista que muestra el diálogo ⓘ (`src/renderer/about.js`). Si incluyes una
+  fuente o una biblioteca nueva dentro de la app, tiene que aparecer ahí
+  con su licencia.
   - El selector está en `src/renderer/fontpicker.js`.

@@ -2,7 +2,7 @@
 // y estilo, y vista previa con tu propio texto.
 import { store } from './store.js';
 import { h } from './ui.js';
-import { googleCatalog, FONT_CATEGORIES, FONT_TAGS, loadPreviewFont, previewFamily, loadCustomFonts, isBundled } from '../shared/fonts.js';
+import { googleCatalog, FONT_CATEGORIES, FONT_TAGS, FONT_SOURCES, loadPreviewFont, previewFamily, loadCustomFonts, isBundled } from '../shared/fonts.js';
 
 const PAGE = 48;
 const PREVIEW_KEY = 'cdb.fontPreview';
@@ -10,7 +10,7 @@ const PREVIEW_KEY = 'cdb.fontPreview';
 let dlg = null;
 let ui = null;
 let resolveFn = null;
-const filters = { q: '', cat: '', tag: '', sort: 'popular', current: '' };
+const filters = { q: '', cat: '', tag: '', src: '', sort: 'popular', current: '' };
 
 function previewText() {
   try {
@@ -37,6 +37,7 @@ function build() {
     h('option', { value: 'new', text: 'Más nuevas' }));
   const cats = h('div', { class: 'fp-chips' });
   const tags = h('div', { class: 'fp-chips' });
+  const sources = h('div', { class: 'fp-chips' });
   const grid = h('div', { class: 'fp-grid' });
   const count = h('span', { class: 'muted' });
   const close = h('button', { type: 'button', text: 'Cancelar' });
@@ -44,8 +45,8 @@ function build() {
     h('div', { class: 'fp-head' },
       h('h2', { text: 'Elegir tipografía' }), count, h('div', { class: 'spacer' }), close),
     h('div', { class: 'fp-tools' }, search, sample, size, sort),
-    cats, tags,
-    h('p', { class: 'help fp-note', text: 'Las marcadas «incluida» funcionan sin internet. El resto se descarga de Google Fonts la primera vez que la eliges.' }),
+    cats, tags, sources,
+    h('p', { class: 'help fp-note', text: 'Todas son libres para uso personal y comercial. Las marcadas «incluida» funcionan sin internet; el resto se descarga (de Google Fonts, Fontshare o Fontsource) la primera vez que la eliges.' }),
     grid);
   document.body.appendChild(dlg);
 
@@ -61,7 +62,7 @@ function build() {
   dlg.addEventListener('close', () => { const r = resolveFn; resolveFn = null; r?.(dlg.returnValue || null); });
   dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
   grid.style.setProperty('--fp-size', '30px');
-  ui = { search, sample, size, sort, cats, tags, grid, count };
+  ui = { search, sample, size, sort, cats, tags, sources, grid, count };
 }
 
 function matches() {
@@ -70,6 +71,7 @@ function matches() {
     if (filters.q && !f.family.toLowerCase().includes(filters.q)) return false;
     if (filters.cat === 'offline') { if (!f.offline) return false; } else if (filters.cat === 'used') { if (!used.has(f.family) && f.family !== filters.current) return false; } else if (filters.cat && f.cat !== filters.cat) return false;
     if (filters.tag && !f.tags.includes(filters.tag)) return false;
+    if (filters.src && f.src !== filters.src) return false;
     return true;
   });
   if (filters.sort === 'az') list = [...list].sort((a, b) => a.family.localeCompare(b.family));
@@ -87,18 +89,25 @@ function card(f, text) {
     preview.classList.add('loading');
     preview._font = f;
   }
-  const el = h('button', { type: 'button', class: `fp-card${f.family === filters.current ? ' current' : ''}`, title: f.family },
+  // Un div y no un <button>: así la tarjeta crece con su contenido en todos los navegadores.
+  const el = h('div', { class: `fp-card${f.family === filters.current ? ' current' : ''}`, title: f.family, role: 'button', tabindex: 0 },
     preview,
     h('div', { class: 'fp-meta' },
       h('b', { text: f.family }),
       h('span', { class: 'muted', text: `${FONT_CATEGORIES.find((c) => c.id === f.cat)?.label || ''} · ${f.weights.length} grosor${f.weights.length === 1 ? '' : 'es'}` }),
-      f.offline ? h('span', { class: 'badge', text: 'incluida' }) : null));
-  el.addEventListener('click', () => { dlg.returnValue = f.family; dlg.close(f.family); });
+      f.offline ? h('span', { class: 'badge', text: 'incluida' }) : null,
+      h('span', { class: 'fp-src', text: `${FONT_SOURCES.find((x) => x.id === f.src)?.label || 'Google Fonts'} · ${f.license}`, title: 'Origen y licencia' })));
+  const pick = () => { dlg.returnValue = f.family; dlg.close(f.family); };
+  el.addEventListener('click', pick);
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
   return el;
 }
 
 function render() {
-  const { grid, cats, tags, count, sample } = ui;
+  const { grid, cats, tags, sources, count, sample } = ui;
+  sources.replaceChildren(
+    h('span', { class: 'muted fp-label', text: 'Origen:' }),
+    ...FONT_SOURCES.map((x) => chip(x.label, filters.src === x.id, () => { filters.src = filters.src === x.id ? '' : x.id; render(); })));
   cats.replaceChildren(
     chip('Todas', !filters.cat, () => { filters.cat = ''; render(); }),
     chip('Incluidas (sin internet)', filters.cat === 'offline', () => { filters.cat = 'offline'; render(); }),

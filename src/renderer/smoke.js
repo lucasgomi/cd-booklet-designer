@@ -132,15 +132,32 @@ export async function runSmoke({ commands, showTab, exportLabelsPdf, exportLabel
   }
   await step('07c-pegatina-editar', async () => {
     commit((s) => { s.label = applyLabelPreset(normalizeLabel(s.label), 'cdr'); }, { rebuild: 'label' });
-    await wait(300);
-    const el = document.querySelector('.label-preview [data-ltext]');
-    const r = el.getBoundingClientRect();
-    const box = document.querySelector('.label-preview');
-    const at = (x, y, type) => box.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: x, clientY: y, pointerId: 1 }));
-    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.x + r.width / 2, clientY: r.y + r.height / 2, pointerId: 1 }));
-    at(r.x + r.width / 2 + 20, r.y + r.height / 2 + 10, 'pointermove');
-    at(r.x + r.width / 2 + 20, r.y + r.height / 2 + 10, 'pointerup');
     await wait(400);
+    const stage = document.getElementById('label-stage');
+    const fire = (el, type, x, y) => el.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: x, clientY: y, pointerId: 1 }));
+    const drag = async (el, dx, dy) => {
+      const r = el.getBoundingClientRect();
+      const x = r.x + r.width / 2;
+      const y = r.y + r.height / 2;
+      fire(el, 'pointerdown', x, y);
+      fire(stage, 'pointermove', x + dx / 2, y + dy / 2);
+      fire(stage, 'pointermove', x + dx, y + dy);
+      fire(stage, 'pointerup', x + dx, y + dy);
+      await wait(300);
+    };
+    // Texto recto: moverlo y agrandarlo con su tirador.
+    await drag(document.querySelector('#label-host [data-ltext]'), 30, 12);
+    await drag(document.querySelector('#label-host .lt-size'), 25, 15);
+    // Texto curvo: tirar hacia el centro lo separa del borde.
+    commit((s) => { s.label = applyLabelPreset(normalizeLabel(s.label), 'portada'); }, { rebuild: 'label' });
+    await wait(400);
+    const arc = document.querySelector('#label-host text[data-ltext]');
+    report.arcBefore = normalizeLabel(store.state.label).texts[0].offset;
+    await drag(arc, 0, 40);
+    report.arcAfter = normalizeLabel(store.state.label).texts[0];
+    commit((s) => { s.label = applyLabelPreset(normalizeLabel(s.label), 'cdr'); }, { rebuild: 'label' });
+    await wait(300);
+    await drag(document.querySelector('#label-host [data-ltext]'), 30, 12);
     document.querySelector('#tab-label .lt-card.open')?.scrollIntoView({ block: 'start' });
   });
   report.labelDrag = normalizeLabel(store.state.label).texts[0];
@@ -156,6 +173,20 @@ export async function runSmoke({ commands, showTab, exportLabelsPdf, exportLabel
   });
   report.fontPickerCards = document.querySelectorAll('.font-picker .fp-card').length;
   document.querySelector('.font-picker')?.close();
+  // Tipografías de otros orígenes: Fontshare (Clash Display) y Fontsource (Redaction 35).
+  {
+    const { loadCustomFonts } = await import('../shared/fonts.js');
+    const ok = await loadCustomFonts(['Clash Display', 'Redaction 35']);
+    report.otherFonts = { ok, clash: document.fonts.check("700 20px 'Clash Display'"), redaction: document.fonts.check("400 20px 'Redaction 35'") };
+    commit((s) => {
+      s.customFonts = [...new Set([...(s.customFonts || []), 'Clash Display', 'Redaction 35'])];
+      s.label = applyLabelPreset(normalizeLabel(s.label), 'degradado');
+      s.label.texts[0].font = 'Clash Display';
+      s.label.texts[1].font = 'Redaction 35';
+    }, { rebuild: 'label' });
+    await wait(500);
+    report.steps.push({ name: 'export-pegatina-otras-fuentes', ok: !!(await window.api.exportLabelPng({ state: store.state, assets: usedAssets(), suggestedName: 'otras-fuentes', sheet: sheetCfg() })) });
+  }
   await step('08-grupos', () => {
     commit((s) => {
       s.tracks.forEach((t, i) => { t.group = i < 9 ? 'Cara A' : i < 18 ? 'Cara B' : 'Extras'; });

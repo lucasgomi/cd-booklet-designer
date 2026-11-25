@@ -3,7 +3,7 @@
 import { renderSheet, mountSheet, whenReady, scaledState } from '../shared/render.js';
 import { renderLabel, normalizeSheetConfig } from '../shared/disc-label.js';
 import { normalizeState, sheetWidth, PANEL_MM } from '../shared/model.js';
-import { googleFontsUrl, loadCustomFonts } from '../shared/fonts.js';
+import { fetchFontCss, loadCustomFonts } from '../shared/fonts.js';
 
 const RELEASES = 'https://github.com/lucasgomi/cd-booklet-designer/releases/latest';
 const DPI = 300;
@@ -134,11 +134,12 @@ async function fontCss(root, customFonts) {
     const cs = getComputedStyle(el);
     add(cs.fontFamily, cs.fontWeight, cs.fontStyle);
   }
-  const sheets = [new URL('../vendor/fonts/fonts.css', import.meta.url).href];
-  for (const f of customFonts || []) if (used.has(f)) sheets.push(googleFontsUrl(f));
+  // Las incluidas (rutas relativas a su CSS) y las descargadas (ya absolutas).
+  const local = new URL('../vendor/fonts/fonts.css', import.meta.url).href;
+  const sheets = [{ url: local, text: await fetch(local).then((r) => r.text()).catch(() => '') }];
+  for (const f of customFonts || []) if (used.has(f)) sheets.push({ url: local, text: await fetchFontCss(f).catch(() => '') });
   const faces = [];
-  for (const url of sheets) {
-    const text = await fetch(url).then((r) => r.text()).catch(() => '');
+  for (const { url, text } of sheets) {
     for (const block of text.match(/@font-face\s*{[^}]*}/g) || []) {
       const family = /font-family:\s*['"]?([^;'"]+)['"]?;/.exec(block)?.[1];
       if (!family || !used.has(family)) continue;

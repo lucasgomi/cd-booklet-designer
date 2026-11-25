@@ -13,7 +13,6 @@ import { newId } from '../../shared/tracklist.js';
 import { fontButton } from '../fontpicker.js';
 
 const SHEET_KEY = 'cdb.labelSheet';
-const PREVIEW_PX = 330;
 
 // La hoja de pegatinas es del equipo (papel que tienes en casa), no del proyecto.
 let sheet = loadSheet();
@@ -31,11 +30,14 @@ export function sheetConfig() {
   return sheet;
 }
 
-let previewHost = null;
 let mapHost = null;
-let selected = null; // id del texto que se está editando
+let panelRoot = null;
+let selected = null; // id del texto seleccionado
+let guides = { x: false };   // guía de centrado visible mientras se arrastra
+let dragCount = 0;
 
 const label = () => normalizeLabel(store.state.label);
+const $ = (id) => document.getElementById(id);
 
 /** Cambia la pegatina. `rebuild` redibuja el panel (cambios de estructura). */
 function setL(fn, { key = null, rebuild = false } = {}) {
@@ -45,58 +47,211 @@ function setL(fn, { key = null, rebuild = false } = {}) {
   }, { key, rebuild: rebuild ? 'label' : false });
 }
 const setText = (id, patch, opts = {}) => setL((l) => { Object.assign(l.texts.find((t) => t.id === id) || {}, patch); }, { key: `label.${id}.${Object.keys(patch).join()}`, ...opts });
+// Teclado y rueda: el panel se pone al día un momento después de la última pulsación.
+let syncTimer = null;
+const syncPanelSoon = () => {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { if (panelRoot) { const top = panelRoot.scrollTop; renderLabelPanel(panelRoot); panelRoot.scrollTop = top; } }, 500);
+};
 
-/** Redibuja la vista previa de la pegatina (se llama en cada cambio del proyecto). */
-export function refreshLabelPreview() {
-  if (!previewHost || !previewHost.isConnected) return;
-  const el = renderLabel(store.state, store.assets, { diameter: sheet.diameter, hole: sheet.hole, bleed: 0, guides: true, editor: true });
-  // 1 mm = 96/25,4 px: se escala para que el disco ocupe PREVIEW_PX.
-  previewHost.style.zoom = String(PREVIEW_PX / (sheet.diameter * 96 / 25.4));
-  mountSheet(previewHost, el);
-  for (const n of previewHost.querySelectorAll('[data-ltext]')) n.classList.toggle('lt-selected', n.dataset.ltext === selected);
+/** Cambia el texto seleccionado y abre su ficha en el panel. */
+function selectText(id, { focus = false } = {}) {
+  const changed = selected !== id;
+  selected = id;
+  if (changed && panelRoot) {
+    const top = panelRoot.scrollTop;
+    renderLabelPanel(panelRoot);
+    panelRoot.scrollTop = top;
+    panelRoot.querySelector('.lt-card.open')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  if (focus) {
+    const input = panelRoot?.querySelector('.lt-card.open .lt-head input');
+    input?.focus();
+    input?.select();
+  }
+  refreshLabelPreview();
 }
 
-/** Arrastrar textos en la vista previa: los rectos se mueven y los curvos giran. */
-function setupDrag(box, rerender) {
+// ------------------------------------------------- vista previa grande
+// Al abrir la pestaña «Pegatina», la zona de la vista previa muestra la
+// pegatina a tamaño grande y ahí se editan los textos con el ratón o el dedo.
+
+let zoom = 1;
+const PX_PER_MM = 96 / 25.4;
+
+/** Redibuja la pegatina en la vista previa (se llama en cada cambio del proyecto). */
+export function refreshLabelPreview() {
+  const stage = $('label-stage');
+  const host = $('label-host');
+  if (!stage || stage.hidden || !stage.clientWidth) return;
+  setupStage(stage);
+  const avail = Math.max(120, Math.min(stage.clientWidth, stage.clientHeight) - 28);
+  zoom = avail / (sheet.diameter * PX_PER_MM);
+  host.style.zoom = String(zoom);
+  mountSheet(host, renderLabel(store.state, store.assets, { diameter: sheet.diameter, hole: sheet.hole, bleed: 0, guides: true, editor: true }));
+  drawSelection(host);
+}
+
+/** Marco, tiradores y guías del texto seleccionado. */
+function drawSelection(host) {
+  const T = label().texts.find((t) => t.id === selected);
+  const px = (n) => `${(n / zoom).toFixed(2)}px`; // tamaño fijo en pantalla pese al zoom
+  const S = sheet.diameter;
+  const c = S / 2;
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${S} ${S}`);
+  svg.setAttribute('class', 'lt-overlay');
+  const add = (tag, attrs) => {
+    const e = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    svg.appendChild(e);
+  };
+  const stroke = (1.2 / zoom / PX_PER_MM).toFixed(3);
+  if (guides.x) add('line', { x1: c, y1: 0, x2: c, y2: S, stroke: '#E0006A', 'stroke-width': stroke, 'stroke-dasharray': `${stroke * 4} ${stroke * 3}` });
+  host.firstElementChild?.appendChild(svg);
+  if (!T) return;
+  const el = host.querySelector(`[data-ltext="${T.id}"]`);
+  if (!el) return;
+  if (T.path === 'free') {
+    el.classList.add('lt-selected');
+    el.style.outlineWidth = px(1.5);
+    el.style.outlineOffset = px(4);
+    const handle = (kind, title) => {
+      const hnd = h('span', { class: `lt-handle lt-${kind}`, 'data-h': kind, title });
+      Object.assign(hnd.style, { width: px(16), height: px(16), margin: px(-8) });
+      el.appendChild(hnd);
+    };
+    handle('size', 'Arrastra para cambiar el tamaño');
+    handle('rot', 'Arrastra para girar');
+    el.querySelector('.lt-rot').style.top = px(-30);
+  } else {
+    // El círculo por el que va el texto y un punto donde está su centro.
+    const r = Number(el.getAttribute('data-r')) || c - 8;
+    const a = ((T.path === 'top' ? -90 : 90) + (T.angle || 0)) * (Math.PI / 180);
+    add('circle', { cx: c, cy: c, r, fill: 'none', stroke: '#4f7fd6', 'stroke-width': stroke, 'stroke-dasharray': `${stroke * 4} ${stroke * 3}` });
+    add('circle', { cx: c + r * Math.cos(a), cy: c + r * Math.sin(a), r: (6 / zoom / PX_PER_MM).toFixed(3), fill: '#4f7fd6', stroke: '#fff', 'stroke-width': stroke });
+  }
+}
+
+let stageReady = false;
+function setupStage(stage) {
+  if (stageReady) return;
+  stageReady = true;
   let drag = null;
-  box.addEventListener('pointerdown', (e) => {
+  const host = $('label-host');
+  const center = () => {
+    const r = host.getBoundingClientRect();
+    return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, mmPerPx: sheet.diameter / r.width };
+  };
+  stage.addEventListener('pointerdown', (e) => {
+    const handle = e.target.closest('[data-h]');
     const el = e.target.closest('[data-ltext]');
-    if (!el) return;
-    const T = label().texts.find((t) => t.id === el.dataset.ltext);
-    if (!T) return;
+    const T = label().texts.find((t) => t.id === (handle ? selected : el?.dataset.ltext));
+    if (!T) { if (selected) selectText(null); return; }
     e.preventDefault();
-    box.setPointerCapture(e.pointerId);
-    const r = previewHost.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
-    const mmPerPx = sheet.diameter / r.width;
-    const changed = selected !== T.id;
-    selected = T.id;
-    drag = { T: { ...T }, x0: e.clientX, y0: e.clientY, cx, cy, mmPerPx, a0: Math.atan2(e.clientY - cy, e.clientX - cx), changed };
-    refreshLabelPreview();
+    stage.setPointerCapture(e.pointerId);
+    const { cx, cy, mmPerPx } = center();
+    const target = handle ? handle.parentElement : el;
+    const tr = target.getBoundingClientRect();
+    const tx = tr.left + tr.width / 2;
+    const ty = tr.top + tr.height / 2;
+    dragCount += 1;
+    drag = {
+      T: { ...T }, mode: handle ? handle.dataset.h : 'move', x0: e.clientX, y0: e.clientY, cx, cy, mmPerPx, tx, ty,
+      a0: Math.atan2(e.clientY - cy, e.clientX - cx), r0: Math.hypot(e.clientX - cx, e.clientY - cy) * mmPerPx,
+      d0: Math.max(4, Math.hypot(e.clientX - tx, e.clientY - ty)), moved: !!handle, key: `label.drag.${dragCount}`,
+    };
+    if (!handle && selected !== T.id) selectText(T.id);
   });
-  box.addEventListener('pointermove', (e) => {
+  stage.addEventListener('pointermove', (e) => {
     if (!drag) return;
-    const { T } = drag;
-    if (T.path === 'free') {
-      const x = Math.round((T.x + (e.clientX - drag.x0) * drag.mmPerPx) * 2) / 2;
-      const y = Math.round((T.y + (e.clientY - drag.y0) * drag.mmPerPx) * 2) / 2;
-      setText(T.id, { x, y }, { key: `label.drag.${T.id}` });
+    if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 4) return; // un clic no mueve
+    drag.moved = true;
+    const { T, mmPerPx } = drag;
+    const opts = { key: drag.key };
+    if (drag.mode === 'size') {
+      const d = Math.hypot(e.clientX - drag.tx, e.clientY - drag.ty);
+      setText(T.id, { size: Math.min(80, Math.max(4, Math.round(T.size * (d / drag.d0) * 2) / 2)) }, opts);
+    } else if (drag.mode === 'rot') {
+      let angle = (Math.atan2(e.clientY - drag.ty, e.clientX - drag.tx) * 180) / Math.PI + 90;
+      angle = e.shiftKey ? Math.round(angle / 15) * 15 : Math.round(angle);
+      for (const k of [-180, -90, 0, 90, 180]) if (Math.abs(angle - k) < 5) angle = k;
+      setText(T.id, { angle: ((angle + 540) % 360) - 180 }, opts);
+    } else if (T.path === 'free') {
+      let x = T.x + (e.clientX - drag.x0) * mmPerPx;
+      const y = Math.round((T.y + (e.clientY - drag.y0) * mmPerPx) * 2) / 2;
+      guides = { x: Math.abs(x) < 1.5 };
+      x = guides.x ? 0 : Math.round(x * 2) / 2;
+      setText(T.id, { x, y }, opts);
     } else {
+      // En curva: alrededor del disco gira; hacia dentro o fuera cambia la distancia al borde.
       const a = Math.atan2(e.clientY - drag.cy, e.clientX - drag.cx);
-      let angle = T.angle + ((a - drag.a0) * 180) / Math.PI;
-      angle = ((Math.round(angle) + 540) % 360) - 180;
-      setText(T.id, { angle }, { key: `label.drag.${T.id}` });
+      let angle = Math.round(T.angle + ((a - drag.a0) * 180) / Math.PI);
+      angle = ((angle + 540) % 360) - 180;
+      if (Math.abs(angle) < 3) angle = 0;
+      const r = Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) * mmPerPx;
+      const offset = Math.min(45, Math.max(0, Math.round(((T.offset ?? 4.5) - (r - drag.r0)) * 2) / 2));
+      setText(T.id, { angle, offset }, opts);
     }
   });
   const end = () => {
     if (!drag) return;
-    const { changed } = drag;
+    const { moved } = drag;
     drag = null;
-    if (changed) rerender();
+    if (guides.x) guides = { x: false };
+    // Los números del panel (posición, tamaño, giro) se ponen al día al soltar.
+    if (moved && panelRoot) {
+      const top = panelRoot.scrollTop;
+      renderLabelPanel(panelRoot);
+      panelRoot.scrollTop = top;
+    } else {
+      refreshLabelPreview();
+    }
   };
-  box.addEventListener('pointerup', end);
-  box.addEventListener('pointercancel', end);
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+  stage.addEventListener('dblclick', (e) => {
+    const el = e.target.closest('[data-ltext]');
+    if (el) selectText(el.dataset.ltext, { focus: true });
+  });
+  // Rueda del ratón: tamaño del texto seleccionado.
+  stage.addEventListener('wheel', (e) => {
+    const T = label().texts.find((t) => t.id === selected);
+    if (!T) return;
+    e.preventDefault();
+    setText(T.id, { size: Math.min(80, Math.max(4, T.size + (e.deltaY < 0 ? 0.5 : -0.5))) }, { key: `label.wheel.${T.id}` });
+    syncPanelSoon();
+  }, { passive: false });
+  // Teclado: flechas mueven (o giran/acercan los curvos), + y − cambian el tamaño.
+  document.addEventListener('keydown', (e) => {
+    if (stage.hidden || !selected || e.target.closest('input, textarea, select, dialog')) return;
+    const T = label().texts.find((t) => t.id === selected);
+    if (!T) return;
+    const step = e.shiftKey ? 2 : 0.5;
+    const k = e.key;
+    let patch = null;
+    if (T.path === 'free') {
+      if (k === 'ArrowLeft') patch = { x: T.x - step };
+      if (k === 'ArrowRight') patch = { x: T.x + step };
+      if (k === 'ArrowUp') patch = { y: T.y - step };
+      if (k === 'ArrowDown') patch = { y: T.y + step };
+    } else {
+      if (k === 'ArrowLeft') patch = { angle: (T.angle || 0) - (e.shiftKey ? 5 : 1) };
+      if (k === 'ArrowRight') patch = { angle: (T.angle || 0) + (e.shiftKey ? 5 : 1) };
+      if (k === 'ArrowUp') patch = { offset: Math.max(0, (T.offset ?? 4.5) - step) };
+      if (k === 'ArrowDown') patch = { offset: (T.offset ?? 4.5) + step };
+    }
+    if (k === '+' || k === '=') patch = { size: Math.min(80, T.size + 0.5) };
+    if (k === '-') patch = { size: Math.max(4, T.size - 0.5) };
+    if (k === 'Escape') { selectText(null); return; }
+    if (k === 'Delete') { selected = null; setL((l) => { l.texts = l.texts.filter((t) => t.id !== T.id); }, { rebuild: true }); e.preventDefault(); return; }
+    if (!patch) return;
+    e.preventDefault();
+    setText(T.id, patch, { key: `label.key.${T.id}.${Object.keys(patch)}` });
+    syncPanelSoon();
+  });
+  new ResizeObserver(() => requestAnimationFrame(refreshLabelPreview)).observe(stage);
 }
 
 function drawMap() {
@@ -245,14 +400,14 @@ function fontPick(current, onPick) {
   return fontButton(current || style.titleFont, (f) => onPick(f), {});
 }
 
-function textCard(T, i, n, rerender) {
+function textCard(T, i, n) {
   const open = T.id === selected;
   const arc = T.path !== 'free';
   const set = (patch, rebuild = false) => setText(T.id, patch, { rebuild });
   const head = h('div', { class: 'lt-head' },
     textInput(T.text, (v) => set({ text: v }), { placeholder: 'Texto o {titulo}, {artista}…' }),
     select(T.path, [{ value: 'free', label: 'Recto' }, { value: 'top', label: 'Curva arriba' }, { value: 'bottom', label: 'Curva abajo' }], (v) => set({ path: v }, true)),
-    button(open ? '▴' : '▾', () => { selected = open ? null : T.id; rerender(); }, { class: 'icon', title: open ? 'Cerrar' : 'Editar estilo' }));
+    button(open ? '▴' : '▾', () => selectText(open ? null : T.id), { class: 'icon', title: open ? 'Cerrar' : 'Editar estilo' }));
   const card = h('div', { class: `lt-card${open ? ' open' : ''}` }, head);
   if (!open) return card;
   card.append(...[
@@ -285,11 +440,11 @@ function textCard(T, i, n, rerender) {
   return card;
 }
 
-function textsSection(L, rerender) {
+function textsSection(L) {
   const add = (over) => setL((l) => { const t = newLabelText(over); l.texts.push(t); selected = t.id; }, { rebuild: true });
   return section('Textos',
     h('p', { class: 'help', text: 'Arrastra los textos en la vista previa: los rectos se mueven y los curvos giran alrededor del disco.' }),
-    ...L.texts.map((t, i) => textCard(t, i, L.texts.length, rerender)),
+    ...L.texts.map((t, i) => textCard(t, i, L.texts.length)),
     h('div', { class: 'toolbar' },
       button('+ Texto recto', () => add({ text: 'Texto', path: 'free', y: 30 })),
       button('+ Texto en curva', () => add({ text: '{fecha}', path: 'top', offset: 12, size: 9 }))),
@@ -322,17 +477,14 @@ function listSection(L) {
 export function renderLabelPanel(root) {
   const L = label();
   if (selected && !L.texts.some((t) => t.id === selected)) selected = null;
-  const rerender = () => { const top = root.scrollTop; renderLabelPanel(root); root.scrollTop = top; };
+  panelRoot = root;
   root.replaceChildren();
 
-  previewHost = h('div', { class: 'label-preview-host' });
-  const box = h('div', { class: 'label-preview' }, previewHost);
-  setupDrag(box, rerender);
-  root.appendChild(section('Pegatina del CD', box,
-    h('p', { class: 'help', text: 'Las líneas discontinuas son el borde y el agujero de la pegatina (no se imprimen).' })));
+  root.appendChild(section('Pegatina del CD',
+    h('p', { class: 'help', text: 'La pegatina se edita en la vista previa grande. Pincha un texto para elegirlo: los rectos se arrastran y tienen tiradores para el tamaño (abajo a la derecha) y el giro (arriba); los curvos giran alrededor del disco y, tirando hacia dentro o fuera, se separan del borde. También: flechas para mover (Mayús, más rápido), + y − o la rueda para el tamaño, doble clic para escribir y Supr para borrar.' })));
   root.appendChild(presetsSection());
   root.appendChild(backgroundSection(L));
-  root.appendChild(textsSection(L, rerender));
+  root.appendChild(textsSection(L));
   root.appendChild(listSection(L));
   root.appendChild(centerSection(L));
 

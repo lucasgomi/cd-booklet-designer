@@ -100,6 +100,13 @@ copy('html-to-image/dist/html-to-image.js', 'html-to-image.js'); // PNG en la ve
 
 let css = '';
 const catalog = [];
+// Licencias de lo que va dentro de la app: las de las fuentes OFL/Apache y
+// las de las bibliotecas MIT exigen acompañar su texto al redistribuirlas.
+const notices = [];
+const readLicense = (dir) => {
+  const f = fs.readdirSync(dir).find((x) => /^(licen[sc]e|mit-license)/i.test(x));
+  return f ? fs.readFileSync(path.join(dir, f), 'utf8').trim() : '';
+};
 for (const [pkg, spec] of Object.entries(FONTS)) {
   // 'Categoría' o 'Categoría|400,700' (sólo esos grosores, sin cursivas).
   const [category, only] = spec.split('|');
@@ -129,9 +136,27 @@ for (const [pkg, spec] of Object.entries(FONTS)) {
     }
   }
   catalog.push({ family, category, weights: [...weights].sort((a, b) => a - b), italic });
+  const pkgJson = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+  notices.push({ kind: 'font', name: family, license: pkgJson.license, url: `https://fonts.google.com/specimen/${family.replace(/ /g, '+')}`, text: readLicense(dir) });
 }
+
+const MIT = (who) => `MIT License\n\nCopyright (c) ${who}\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
+for (const lib of ['jsbarcode', 'qrcode-generator', 'sortablejs', 'html-to-image']) {
+  const dir = path.join(nm, lib);
+  const pkgJson = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+  const author = typeof pkgJson.author === 'string' ? pkgJson.author : pkgJson.author?.name || lib;
+  notices.push({ kind: 'lib', name: lib, license: pkgJson.license, url: `https://www.npmjs.com/package/${lib}`, text: readLicense(dir) || MIT(author) });
+}
+fs.writeFileSync(path.join(vendor, 'THIRD-PARTY-LICENSES.txt'),
+  `Licencias de terceros incluidas en CD Booklet Designer\n${'='.repeat(54)}\n\n`
+  + notices.map((n) => `${n.name} (${n.license})\n${n.url}\n${'-'.repeat(60)}\n${n.text}\n`).join('\n\n'));
+// El texto completo va aparte y se carga sólo al abrir el diálogo de licencias.
+fs.writeFileSync(path.join(vendor, 'licenses-text.js'),
+  `// Generado por scripts/prepare-vendor.js\nexport const THIRD_PARTY_TEXT = ${JSON.stringify(fs.readFileSync(path.join(vendor, 'THIRD-PARTY-LICENSES.txt'), 'utf8'))};\n`);
+fs.writeFileSync(path.join(vendor, 'licenses.js'),
+  `// Generado por scripts/prepare-vendor.js\nexport const THIRD_PARTY = ${JSON.stringify(notices.map(({ text, ...n }) => n), null, 1)};\n`);
 
 fs.writeFileSync(path.join(fontsDir, 'fonts.css'), css);
 fs.writeFileSync(path.join(vendor, 'fonts.js'),
   `// Generado por scripts/prepare-vendor.js\nexport const BUNDLED_FONTS = ${JSON.stringify(catalog, null, 2)};\n`);
-console.log(`Vendor listo: ${catalog.length} familias tipográficas.`);
+console.log(`Vendor listo: ${catalog.length} familias tipográficas, ${notices.length} licencias de terceros.`);
