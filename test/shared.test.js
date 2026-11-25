@@ -158,3 +158,26 @@ test('hojas de pegatinas: formatos válidos y ajustes guardados', async () => {
   assert.deepEqual(normalizeSheetConfig({ ...cfg, selected: [0, 2, 5] }).selected, [0, 2]);
   assert.equal(normalizeSheetConfig(null).sheetId, 'a4-3');
 });
+
+test('pegatina: los proyectos antiguos se convierten y los estilos rápidos son válidos', async () => {
+  const { normalizeLabel, LABEL_PRESETS, applyLabelPreset, defaultLabel } = await import('../src/shared/label-model.js');
+  const old = normalizeLabel({ background: 'color', color: '#123456', layout: 'list', topText: '{titulo}', bottomText: '', size: 15, textColor: '#FF0000', listSize: 4 });
+  assert.equal(old.v, 2);
+  assert.equal(old.background, 'color');
+  assert.equal(old.texts.length, 1);
+  assert.equal(old.texts[0].path, 'top');
+  assert.equal(old.texts[0].size, 15);
+  assert.equal(old.list.show, true);
+  assert.equal(normalizeLabel({ layout: 'none', topText: 'x' }).texts.length, 0);
+  for (const p of LABEL_PRESETS) {
+    const l = applyLabelPreset(defaultLabel(), p.id);
+    assert.ok(l.texts.every((t) => t.id && t.text !== undefined), p.id);
+  }
+});
+
+test('catálogo de Google Fonts', async () => {
+  const { GOOGLE_FONTS_RAW } = await import('../src/shared/google-fonts.js');
+  assert.ok(GOOGLE_FONTS_RAW.length > 1000);
+  const marker = GOOGLE_FONTS_RAW.find((f) => f[0] === 'Permanent Marker');
+  assert.ok(marker && marker[5].includes('graffiti'));
+});

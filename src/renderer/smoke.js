@@ -116,15 +116,46 @@ export async function runSmoke({ commands, showTab, exportLabelsPdf, exportLabel
   report.steps.push({ name: 'export-pegatinas-pdf', ok: !!(await exportLabelsPdf(false)) });
   report.steps.push({ name: 'export-pegatinas-prueba', ok: !!(await exportLabelsPdf(true)) });
   report.steps.push({ name: 'export-pegatina-png', ok: !!(await exportLabelPng()) });
-  await step('07c-pegatina-lista', () => commit((s) => { s.label = { ...s.label, layout: 'list', background: 'cover', dim: 0.35 }; }, { rebuild: 'label' }));
-  for (const id of ['trap-gotico', 'radio-pop']) {
-    switchTemplate(id);
-    commit((s) => { s.label = { ...s.label, layout: 'arcs', background: 'template', dim: 0 }; }, { rebuild: 'label' });
+  // Estilos rápidos de la pegatina: un PNG de cada uno.
+  const { LABEL_PRESETS, applyLabelPreset, normalizeLabel } = await import('../shared/disc-label.js');
+  const sheetCfg = () => JSON.parse(localStorage.getItem('cdb.labelSheet'));
+  for (const p of LABEL_PRESETS) {
+    commit((s) => { s.label = applyLabelPreset(normalizeLabel(s.label), p.id); }, { rebuild: 'label' });
     await wait(300);
-    report.steps.push({ name: `export-pegatina-${id}`, ok: !!(await window.api.exportLabelPng({ state: store.state, assets: usedAssets(), suggestedName: id, sheet: JSON.parse(localStorage.getItem('cdb.labelSheet')) })) });
+    report.steps.push({ name: `export-pegatina-${p.id}`, ok: !!(await window.api.exportLabelPng({ state: store.state, assets: usedAssets(), suggestedName: `estilo-${p.id}`, sheet: sheetCfg() })) });
   }
-  commit((s) => { s.label = { ...s.label, layout: 'list', background: 'cover', dim: 0.35 }; }, { rebuild: 'label' });
-  report.steps.push({ name: 'export-pegatina-lista-png', ok: !!(await window.api.exportLabelPng({ state: store.state, assets: usedAssets(), suggestedName: 'lista', sheet: JSON.parse(localStorage.getItem('cdb.labelSheet')) })) });
+  // Lista a los lados y debajo, y un texto seleccionado (arrastrado) en el editor.
+  for (const place of ['sides', 'below']) {
+    commit((s) => { s.label = applyLabelPreset(normalizeLabel(s.label), 'portada'); s.label.dim = 0.4; s.label.list = { ...s.label.list, show: true, place }; }, { rebuild: 'label' });
+    await wait(300);
+    report.steps.push({ name: `export-pegatina-lista-${place}`, ok: !!(await window.api.exportLabelPng({ state: store.state, assets: usedAssets(), suggestedName: `lista-${place}`, sheet: sheetCfg() })) });
+  }
+  await step('07c-pegatina-editar', async () => {
+    commit((s) => { s.label = applyLabelPreset(normalizeLabel(s.label), 'cdr'); }, { rebuild: 'label' });
+    await wait(300);
+    const el = document.querySelector('.label-preview [data-ltext]');
+    const r = el.getBoundingClientRect();
+    const box = document.querySelector('.label-preview');
+    const at = (x, y, type) => box.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: x, clientY: y, pointerId: 1 }));
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: r.x + r.width / 2, clientY: r.y + r.height / 2, pointerId: 1 }));
+    at(r.x + r.width / 2 + 20, r.y + r.height / 2 + 10, 'pointermove');
+    at(r.x + r.width / 2 + 20, r.y + r.height / 2 + 10, 'pointerup');
+    await wait(400);
+    document.querySelector('#tab-label .lt-card.open')?.scrollIntoView({ block: 'start' });
+  });
+  report.labelDrag = normalizeLabel(store.state.label).texts[0];
+  // Selector de tipografías: filtro «Góticas».
+  await step('07d-selector-fuentes', async () => {
+    document.querySelector('#tab-label .font-button')?.click()
+      || [...document.querySelectorAll('#tab-label .lt-head button')][0]?.click();
+    await wait(300);
+    document.querySelector('#tab-label .font-button')?.click();
+    await wait(400);
+    [...document.querySelectorAll('.font-picker .chip')].find((c) => /Góticas/.test(c.textContent))?.click();
+    await wait(1500);
+  });
+  report.fontPickerCards = document.querySelectorAll('.font-picker .fp-card').length;
+  document.querySelector('.font-picker')?.close();
   await step('08-grupos', () => {
     commit((s) => {
       s.tracks.forEach((t, i) => { t.group = i < 9 ? 'Baño María' : i < 18 ? 'Alv' : 'Tiny Desk'; });

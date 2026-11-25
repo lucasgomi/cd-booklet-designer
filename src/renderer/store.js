@@ -103,6 +103,6 @@ export function addAsset(id, dataUrl) {
 
 /** Ids de imágenes en uso (para no guardar imágenes huérfanas). */
 export function usedAssets(state = store.state) {
-  const ids = new Set([state.images.background, state.images.cover, ...state.images.stickers.map((s) => s.asset)].filter(Boolean));
+  const ids = new Set([state.images.background, state.images.cover, state.label?.image, ...state.images.stickers.map((s) => s.asset)].filter(Boolean));
   return Object.fromEntries(Object.entries(store.assets).filter(([id]) => ids.has(id)));
 }

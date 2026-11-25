@@ -133,7 +133,7 @@ adorno en la vista previa y pulsar «Ocultar» (Ctrl+Z lo recupera).
 
 Todo lo visual se ajusta desde la interfaz:
 - colores, con selector y campo hexadecimal;
-- tipografías de título y de lista, con grosor y tamaño. Se incluyen 32
+- tipografías de título y de lista, con grosor y tamaño. Se incluyen 73
   familias de Google Fonts (con cursivas, manuscritas, góticas y de píxeles) que funcionan sin conexión, y se puede añadir
   cualquier otra por su nombre (necesita Internet);
 - textos;
@@ -199,22 +199,44 @@ discos. También se pueden exportar e importar como archivo
 - Deshacer y rehacer con Ctrl+Z y Ctrl+Y.
 
 **Pegatina del CD** (pestaña «Pegatina»)
-- Diseño circular para el propio disco, con el agujero central. El fondo
-  puede ser la portada, el estilo de la plantilla actual o un color liso.
-- Lleva el título y el artista en curva, y opcionalmente la lista de
-  canciones a los lados del agujero, que se encoge sola si no cabe.
-- Se imprime en hojas de pegatinas para CD:
+- Diseño circular para el propio disco, con el agujero central. Se edita
+  sobre una vista previa en la que se pueden arrastrar los textos: los rectos
+  se mueven y los curvos giran alrededor del disco.
+- **Estilos rápidos** para empezar: Portada, CD-R a rotulador, Vinilo,
+  Degradado, Minimal, Lista en anillo y Estilo de la plantilla.
+- **Fondo**:
+  - Fuentes: la portada, una imagen tuya (con zoom y posición), el estilo
+    de la plantilla, un color liso o un degradado (lineal, del centro o
+    cónico).
+  - Acabados: CD-R plateado o vinilo con surcos.
+  - Se puede oscurecer para que los textos se lean bien.
+- **Textos**: tantos como quieras, rectos o en curva (arriba o abajo).
+  - Cada uno con su tipografía, grosor, tamaño, color, opacidad, mayúsculas,
+    cursiva, contorno, espaciado y giro.
+  - Admiten los campos `{titulo}`, `{artista}`, etc.
+- **Lista de canciones**: en anillos alrededor del agujero, que se reparten
+  en varias vueltas si no cabe; a los lados; o debajo. Con o sin duraciones.
+- **Centro y borde**: círculo central como la etiqueta de un vinilo, y aro
+  decorativo.
+- **Hojas de pegatinas para CD**:
   - Formatos: A4 con 3 (en zigzag), 2 o 1 disco por hoja, y Carta con 2.
   - Pinchando en el dibujo de la hoja eliges en qué pegatinas imprimir, por
     ejemplo las que te queden libres en una hoja empezada.
-- Si tu marca coloca los discos en otro sitio, puedes cambiar las medidas:
-  diámetro, agujero y centro de cada disco.
-- Ayudas para que salga bien:
-  - Calibración de la impresora (mover en horizontal o vertical).
-  - Sangrado, para que no queden bordes blancos.
-  - Hoja de prueba con sólo los contornos, para comprobarlo a contraluz
-    antes de gastar una hoja de pegatinas.
+  - Si tu marca coloca los discos en otro sitio, puedes cambiar las medidas.
+  - Calibración de la impresora y sangrado.
+  - Hoja de prueba con sólo los contornos, para comprobarlo a contraluz.
 - También se exporta la pegatina sola en PNG a 300 ppp.
+
+**Tipografías**
+- Explorador con más de 1.600 familias de Google Fonts y vista previa con tu
+  propio texto. Se abre pinchando en el nombre de cualquier tipografía.
+- Filtros por tipo (sin serifa, con serifa, display, manuscritas,
+  monoespaciadas) y por estilo (góticas, grafiti, retro, píxel, futuristas,
+  terror, caligrafía, elegantes, condensadas, máquina de escribir).
+- Se ordenan por popularidad, por nombre o por novedad.
+- 73 familias vienen incluidas y funcionan sin conexión; las demás se
+  descargan al elegirlas.
+- El catálogo se regenera con `node scripts/build-font-catalog.js`.
 
 ## Actualizaciones automáticas
 

@@ -44,6 +44,48 @@ const FONTS = {
   'pirata-one': 'Display',
   'permanent-marker': 'Manuscrita',
   'rubik-mono-one': 'Display',
+  // Selección extra para portadas: sólo normal y negrita, para no engordar el instalador.
+  'bungee': 'Display|400,700',
+  'righteous': 'Display|400,700',
+  'lobster': 'Manuscrita|400,700',
+  'pacifico': 'Manuscrita|400,700',
+  'bodoni-moda': 'Serif|400,700',
+  'syne': 'Sans|400,700',
+  'space-grotesk': 'Sans|400,700',
+  'dm-sans': 'Sans|400,700',
+  'instrument-serif': 'Serif|400,700',
+  'unbounded': 'Display|400,700',
+  'shrikhand': 'Display|400,700',
+  'bricolage-grotesque': 'Sans|400,700',
+  'dela-gothic-one': 'Display|400,700',
+  'major-mono-display': 'Mono|400,700',
+  'silkscreen': 'Pixel|400,700',
+  'cinzel': 'Serif|400,700',
+  'italiana': 'Serif|400,700',
+  'gloock': 'Serif|400,700',
+  'black-ops-one': 'Display|400,700',
+  'metal-mania': 'Display|400,700',
+  'creepster': 'Display|400,700',
+  'rubik-glitch': 'Display|400,700',
+  'sedgwick-ave-display': 'Manuscrita|400,700',
+  'rock-salt': 'Manuscrita|400,700',
+  'pinyon-script': 'Manuscrita|400,700',
+  'bowlby-one': 'Display|400,700',
+  'orbitron': 'Display|400,700',
+  'audiowide': 'Display|400,700',
+  'alfa-slab-one': 'Display|400,700',
+  'league-gothic': 'Display|400,700',
+  'grenze-gotisch': 'Display|400,700',
+  'unifrakturcook': 'Display|400,700',
+  'nosifer': 'Display|400,700',
+  'bangers': 'Display|400,700',
+  'zen-dots': 'Display|400,700',
+  'climate-crisis': 'Display|400,700',
+  'yeseva-one': 'Serif|400,700',
+  'bagel-fat-one': 'Display|400,700',
+  'titan-one': 'Display|400,700',
+  'fugaz-one': 'Display|400,700',
+  'playfair-display-sc': 'Serif|400,700',
 };
 const SUBSETS = ['latin', 'latin-ext'];
 
@@ -57,7 +99,10 @@ copy('sortablejs/Sortable.min.js', 'Sortable.min.js');
 
 let css = '';
 const catalog = [];
-for (const [pkg, category] of Object.entries(FONTS)) {
+for (const [pkg, spec] of Object.entries(FONTS)) {
+  // 'Categoría' o 'Categoría|400,700' (sólo esos grosores, sin cursivas).
+  const [category, only] = spec.split('|');
+  const onlyWeights = only ? only.split(',').map(Number) : null;
   const dir = path.join(nm, '@fontsource', pkg);
   if (!fs.existsSync(dir)) { console.warn('Falta la fuente', pkg); continue; }
   // Nombre real de la familia desde el CSS de fontsource.
@@ -75,6 +120,7 @@ for (const [pkg, category] of Object.entries(FONTS)) {
       if (!file) continue;
       const m = new RegExp(`^${pkg}-(${SUBSETS.join('|')})-(\\d+)-(normal|italic)\\.woff2$`).exec(file);
       if (!m) continue;
+      if (onlyWeights && (m[3] === 'italic' || !onlyWeights.includes(Number(m[2])))) continue;
       const range = /unicode-range:\s*([^;]+);/.exec(block)?.[1];
       if (m[3] === 'italic') italic = true; else weights.add(Number(m[2]));
       fs.copyFileSync(path.join(dir, 'files', file), path.join(fontsDir, file));

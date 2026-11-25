@@ -4,7 +4,8 @@ import { store, commit } from '../store.js';
 import { h, section, row, textInput, textArea, toggle, select, colorInput, numberInput, opacityInput, button, toast, prompt } from '../ui.js';
 import { getTemplate } from '../../shared/templates/index.js';
 import { currentStyle } from '../../shared/model.js';
-import { fontCatalog, loadCustomFonts, BUNDLED_FONTS } from '../../shared/fonts.js';
+import { loadCustomFonts, BUNDLED_FONTS, fontWeights, withCustomFont } from '../../shared/fonts.js';
+import { fontButton } from '../fontpicker.js';
 
 let userTemplates = [];
 const openSections = new Set(['Adornos', 'Colores']);
@@ -21,25 +22,16 @@ function setStyle(key, value, opts = {}) {
 }
 
 function fontControl(item, style) {
-  const catalog = fontCatalog(store.state.customFonts);
-  const groups = {};
-  for (const f of catalog) (groups[f.category] ||= []).push({ value: f.family, label: f.family });
-  const familyOptions = Object.entries(groups).map(([group, options]) => ({ group, options }));
-  if (!catalog.some((f) => f.family === style[item.family])) {
-    familyOptions.push({ group: 'No disponible', options: [{ value: style[item.family], label: `${style[item.family]} (no instalada)` }] });
-  }
-  const weightsFor = (fam) => catalog.find((f) => f.family === fam)?.weights || [400, 700];
-  const nearest = (fam, w) => weightsFor(fam).reduce((a, b) => (Math.abs(b - w) < Math.abs(a - w) ? b : a));
-
-  const family = select(style[item.family], familyOptions, (v) => {
+  const nearest = (fam, w) => fontWeights(fam).reduce((a, b) => (Math.abs(b - w) < Math.abs(a - w) ? b : a));
+  const family = fontButton(style[item.family], (v) => {
     commit((s) => {
       const st = { ...currentStyle(s), [item.family]: v };
       st[item.weight] = nearest(v, st[item.weight]);
       s.styles[s.templateId] = st;
+      s.customFonts = withCustomFont(s.customFonts, v);
     }, { rebuild: 'design' });
   });
-  family.style.fontFamily = `'${style[item.family]}'`;
-  const weight = select(style[item.weight], weightsFor(style[item.family]).map((w) => ({ value: w, label: String(w) })),
+  const weight = select(style[item.weight], fontWeights(style[item.family]).map((w) => ({ value: w, label: String(w) })),
     (v) => setStyle(item.weight, Number(v)));
   const size = numberInput(style[item.size], { min: 4, max: 40, step: 0.1, unit: 'pt' }, (v) => setStyle(item.size, v));
   return h('div', { class: 'font-control' },
@@ -142,7 +134,7 @@ function googleFontsSection() {
   input.addEventListener('keydown', (e) => { if (e.key === 'Enter') add(); });
   const custom = store.state.customFonts || [];
   return collapsible('Más fuentes de Google Fonts', [
-    h('p', { class: 'help', text: `La app ya incluye ${BUNDLED_FONTS.length} familias que funcionan sin conexión. Puedes añadir cualquier otra de fonts.google.com por su nombre (necesita Internet).` }),
+    h('p', { class: 'help', text: `Pincha en el nombre de cualquier tipografía para abrir el explorador: más de 1.600 de Google Fonts, con filtros por tipo y estilo y vista previa. ${BUNDLED_FONTS.length} vienen incluidas y funcionan sin conexión; las demás se descargan al elegirlas. También puedes añadir una por su nombre:` }),
     h('div', { class: 'inline' }, input, button('Añadir', add)),
     custom.length ? h('div', { class: 'chips' }, ...custom.map((f) => h('span', { class: 'chip' }, f,
       button('×', () => commit((s) => { s.customFonts = s.customFonts.filter((x) => x !== f); }, { rebuild: 'design' }), { class: 'chip-x' })))) : null,
