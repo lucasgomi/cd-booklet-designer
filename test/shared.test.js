@@ -138,3 +138,23 @@ test('el ajuste automático escala la letra de la lista y fija columnas', async 
   assert.equal(listColumns(base), 1); // 'auto' sin decidir = una
   assert.equal(scaledState(st, 1), st);
 });
+
+test('hojas de pegatinas: formatos válidos y ajustes guardados', async () => {
+  const { LABEL_SHEETS, defaultSheetConfig, normalizeSheetConfig } = await import('../src/shared/disc-label.js');
+  for (const sheet of LABEL_SHEETS) {
+    const r = sheet.diameter / 2;
+    for (const s of sheet.slots) {
+      // Cada pegatina cabe en la hoja…
+      assert.ok(s.x - r >= 0 && s.x + r <= sheet.page.w && s.y - r >= 0 && s.y + r <= sheet.page.h, `${sheet.id} se sale de la hoja`);
+    }
+    // …y no se pisa con las demás.
+    sheet.slots.forEach((a, i) => sheet.slots.slice(i + 1).forEach((b) => {
+      assert.ok(Math.hypot(a.x - b.x, a.y - b.y) >= sheet.diameter, `${sheet.id}: pegatinas solapadas`);
+    }));
+  }
+  const cfg = defaultSheetConfig('a4-3');
+  assert.equal(cfg.slots.length, 3);
+  // Selecciones fuera de rango (de un formato anterior) se descartan.
+  assert.deepEqual(normalizeSheetConfig({ ...cfg, selected: [0, 2, 5] }).selected, [0, 2]);
+  assert.equal(normalizeSheetConfig(null).sheetId, 'a4-3');
+});

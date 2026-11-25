@@ -5,6 +5,25 @@ import { TEMPLATES, getTemplate } from './templates/index.js';
 import { newId } from './tracklist.js';
 import { totalSeconds, formatTotal } from './time.js';
 
+// (en model.js para no crear una dependencia circular con disc-label.js)
+export function defaultLabel() {
+  return {
+    background: 'cover',    // cover (si no hay, template) | template | color
+    color: '#111111',
+    dim: 0,
+    layout: 'arcs',         // arcs | list | none
+    topText: '{titulo}',
+    bottomText: '{artista}',
+    font: '',               // '' = la del título de la plantilla
+    weight: 800,
+    size: 13,
+    textColor: '#FFFFFF',
+    outline: true,
+    outlineColor: '#000000',
+    listSize: 5.5,
+  };
+}
+
 export const FILE_FORMAT = 'cdbook';
 export const FILE_VERSION = 1;
 
@@ -36,6 +55,7 @@ export function defaultState() {
       stickers: [],           // { id, asset, x, y, w, rot, shadow, flip }
     },
     booklet: { enabled: false, coverSide: 'right' },
+    label: defaultLabel(),    // pegatina del disco
     autoFit: true,          // reducir la letra de la lista si no cabe
     customFonts: [],          // familias de Google Fonts cargadas en línea
   };
@@ -48,6 +68,7 @@ export function normalizeState(state) {
   s.disc = { ...base.disc, ...state.disc, show: { ...base.disc.show, ...(state.disc?.show || {}) } };
   s.images = { ...base.images, ...state.images };
   s.booklet = { ...base.booklet, ...state.booklet };
+  s.label = { ...base.label, ...(state.label || {}) };
   s.styles = { ...(state.styles || {}) };
   if (!getTemplate(s.templateId)) s.templateId = base.templateId;
   for (const tpl of TEMPLATES) {

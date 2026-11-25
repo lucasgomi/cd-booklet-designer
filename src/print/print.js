@@ -3,6 +3,7 @@
 import { renderSheet, mountSheet, whenReady, scaledState, verticalOverflow, FIT_MIN_SCALE } from '../shared/render.js';
 import { normalizeState, sheetWidth, PANEL_MM } from '../shared/model.js';
 import { loadCustomFonts } from '../shared/fonts.js';
+import { renderLabel, guideSvg, normalizeSheetConfig } from '../shared/disc-label.js';
 
 const A4 = { w: 297, h: 210 };
 const MARK_OFFSET = 3;  // mm entre el corte y la marca
@@ -42,12 +43,82 @@ function marksSvg(x0, y0, w, hgt, booklet) {
   return svg;
 }
 
+/** Hoja de pegatinas (o la hoja de prueba con sólo los contornos). */
+function labelsPage(state, assets, cfg, test) {
+  const { w, h: hgt } = cfg.page;
+  const style = document.createElement('style');
+  style.textContent = `@page { size: ${w}mm ${hgt}mm; margin: 0; } body.labels { width: ${w}mm; height: ${hgt}mm; }`;
+  document.head.appendChild(style);
+  document.body.className = 'labels';
+  const S = cfg.diameter + 2 * cfg.bleed;
+  cfg.slots.forEach((slot, i) => {
+    const chosen = cfg.selected.includes(i);
+    if (!test && !chosen) return;
+    const left = slot.x + cfg.offsetX - S / 2;
+    const top = slot.y + cfg.offsetY - S / 2;
+    const holder = document.createElement('div');
+    holder.style.cssText = `position:absolute;left:${left}mm;top:${top}mm;width:${S}mm;height:${S}mm`;
+    document.body.appendChild(holder);
+    if (test) {
+      holder.appendChild(guideSvg(S, cfg.diameter, cfg.hole, { cross: true }));
+      const n = document.createElement('div');
+      n.className = 'note';
+      n.style.cssText += `;left:0;right:0;top:${S / 2 + cfg.hole / 2 + 3}mm;text-align:center;font-size:10pt`;
+      n.textContent = `Pegatina ${i + 1}${chosen ? ' (elegida)' : ''}`;
+      holder.appendChild(n);
+    } else {
+      mountSheet(holder, renderLabel(state, assets, { diameter: cfg.diameter, hole: cfg.hole, bleed: cfg.bleed }));
+    }
+  });
+  if (test) {
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.style.cssText += `;left:8mm;right:8mm;top:3mm;text-align:center`;
+    note.textContent = 'HOJA DE PRUEBA: imprímela al 100 % en papel normal, ponla encima de la hoja de pegatinas y mírala a contraluz. '
+      + 'Si los círculos no coinciden, corrige la «calibración» en la app y repite.';
+    document.body.appendChild(note);
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${w} ${hgt}`);
+    svg.style.cssText = `position:absolute;left:0;top:0;width:${w}mm;height:${hgt}mm`;
+    const y = hgt - 6;
+    const line = (x1, y1, x2, y2) => {
+      const l = document.createElementNS(NS, 'line');
+      Object.entries({ x1, y1, x2, y2, stroke: '#000', 'stroke-width': 0.15 }).forEach(([k, v]) => l.setAttribute(k, v));
+      svg.appendChild(l);
+    };
+    line(10, y, 60, y);
+    for (let i = 0; i <= 50; i += 10) line(10 + i, y - (i % 50 === 0 ? 1.6 : 1), 10 + i, y);
+    document.body.appendChild(svg);
+    const r = document.createElement('div');
+    r.className = 'note';
+    r.style.cssText += `;left:62mm;top:${y - 2.2}mm`;
+    r.textContent = '← esta regla debe medir 50 mm';
+    document.body.appendChild(r);
+  }
+}
+
 async function main() {
   const payload = await window.api.printPayload();
   if (!payload) return;
   try {
     const state = normalizeState(payload.state);
     await loadCustomFonts(state.customFonts);
+    if (payload.mode === 'labels' || payload.mode === 'labels-test') {
+      labelsPage(state, payload.assets || {}, normalizeSheetConfig(payload.sheet), payload.mode === 'labels-test');
+      await whenReady(document.body);
+      await window.api.printReady(null);
+      return;
+    }
+    if (payload.mode === 'label-png') {
+      const cfg = normalizeSheetConfig(payload.sheet);
+      document.body.className = 'png';
+      document.body.style.zoom = String((payload.dpi || 300) / 96);
+      mountSheet(document.body, renderLabel(state, payload.assets || {}, { diameter: cfg.diameter, hole: cfg.hole, bleed: 0 }));
+      await whenReady(document.body);
+      await window.api.printReady(null);
+      return;
+    }
     // Misma escala que calculó el editor (ajuste automático), para que el PDF/PNG sea idéntico.
     let scale = payload.fitScale || 1;
     const cols = payload.fitCols;

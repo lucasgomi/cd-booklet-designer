@@ -198,6 +198,24 @@ discos. También se pueden exportar e importar como archivo
   un solo archivo.
 - Deshacer y rehacer con Ctrl+Z y Ctrl+Y.
 
+**Pegatina del CD** (pestaña «Pegatina»)
+- Diseño circular para el propio disco, con el agujero central. El fondo
+  puede ser la portada, el estilo de la plantilla actual o un color liso.
+- Lleva el título y el artista en curva, y opcionalmente la lista de
+  canciones a los lados del agujero, que se encoge sola si no cabe.
+- Se imprime en hojas de pegatinas para CD:
+  - Formatos: A4 con 3 (en zigzag), 2 o 1 disco por hoja, y Carta con 2.
+  - Pinchando en el dibujo de la hoja eliges en qué pegatinas imprimir, por
+    ejemplo las que te queden libres en una hoja empezada.
+- Si tu marca coloca los discos en otro sitio, puedes cambiar las medidas:
+  diámetro, agujero y centro de cada disco.
+- Ayudas para que salga bien:
+  - Calibración de la impresora (mover en horizontal o vertical).
+  - Sangrado, para que no queden bordes blancos.
+  - Hoja de prueba con sólo los contornos, para comprobarlo a contraluz
+    antes de gastar una hoja de pegatinas.
+- También se exporta la pegatina sola en PNG a 300 ppp.
+
 ## Actualizaciones automáticas
 
 La versión instalada (`Setup`) busca versiones nuevas en las releases de

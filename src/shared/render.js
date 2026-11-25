@@ -29,7 +29,7 @@ export function prepareTracks(state, style) {
 
 /**
  * Pinta la hoja completa (lista + portada si es librito).
- * opts: { editor: bool, showSafe: bool, selectedSticker: id }
+ * opts: { editor: bool, showSafe: bool, selectedSticker: id, values: {…} (sustituye los campos) }
  */
 export function renderSheet(state, assets, opts = {}) {
   const tpl = getTemplate(state.templateId);
@@ -47,7 +47,7 @@ export function renderSheet(state, assets, opts = {}) {
   const ctx = {
     state, style, assets, asset, h,
     tracks: prepareTracks(state, style),
-    values: placeholderValues(state, style),
+    values: opts.values || placeholderValues(state, style),
     editor: !!opts.editor,
     afterMount: [], // ajustes que necesitan medir el DOM ya montado
   };

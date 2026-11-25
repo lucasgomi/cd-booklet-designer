@@ -286,7 +286,7 @@ dialog textarea { font-family: 'JetBrains Mono', Consolas, monospace; font-size:
 .gallery-label { display: flex; flex-direction: column; line-height: 1.25; padding: 0 2px 2px; }
 .gallery-label b { font-size: 12px; }
 .gallery-label small { color: var(--muted); font-size: 11px; }
-.tabs button { padding: 10px 2px; font-size: 12.5px; }
+.tabs button { padding: 10px 1px; font-size: 12px; }
 
 /* Arrastrar y soltar */
 .drop-overlay { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; pointer-events: none;
@@ -316,3 +316,18 @@ dialog textarea { font-family: 'JetBrains Mono', Consolas, monospace; font-size:
 .canvas { position: relative; }
 .deco-menu { position: absolute; z-index: 20; display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; box-shadow: 0 6px 20px rgba(0, 0, 0, .45); font-size: 12px; white-space: nowrap; }
 .fit-toggle .help { display: block; margin-top: 4px; }
+
+/* Pestaña «Pegatina» */
+.label-preview { display: grid; place-items: center; padding: 10px 0; border-radius: 10px;
+  background: repeating-conic-gradient(#22252b 0 25%, #1c1e23 0 50%) 0 0 / 16px 16px; }
+.label-preview-host { line-height: 0; }
+.label-map { width: 100%; max-width: 260px; display: block; margin: 4px auto 0; }
+.label-map .page { fill: #f4f2ee; stroke: #6b7180; stroke-width: 0.8; }
+.label-map .slot circle { fill: #dcd8d0; stroke: #8a8f99; stroke-width: 0.8; cursor: pointer; }
+.label-map .slot circle.hole { fill: #f4f2ee; }
+.label-map .slot text { font: 700 13px Inter, sans-serif; fill: #6b7180; pointer-events: none; }
+.label-map .slot.on circle:not(.hole) { fill: var(--accent-2); stroke: #2c56a8; }
+.label-map .slot.on text { fill: #fff; }
+.label-map .slot:hover circle:not(.hole) { stroke: var(--accent); stroke-width: 1.6; }
+.label-measures { margin: 8px 0 4px; }
+.label-measures summary { cursor: pointer; color: var(--muted); font-size: 12px; padding: 4px 0; }

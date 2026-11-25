@@ -9,6 +9,7 @@ import { renderDesignPanel, refreshUserTemplates, switchTemplate } from './panel
 import { renderImagesPanel, setSelectedSticker, addStickerFiles } from './panels/images.js';
 import { renderBookletPanel } from './panels/booklet.js';
 import { renderGalleryPanel } from './panels/gallery.js';
+import { renderLabelPanel, refreshLabelPreview, exportLabelsPdf, exportLabelPng } from './panels/label.js';
 import { initPreview, schedule, fit, zoomIn, zoomOut, toggleSafe, markTrackRows, fitScale, fitCols } from './preview.js';
 import { exampleProject } from './example.js';
 import { toast } from './ui.js';
@@ -25,6 +26,7 @@ const panels = {
   design: () => renderDesignPanel($('tab-design')),
   images: () => renderImagesPanel($('tab-images')),
   booklet: () => renderBookletPanel($('tab-booklet'), { exportPdf, exportPng }),
+  label: () => renderLabelPanel($('tab-label')),
 };
 // Qué paneles dependen de cada tipo de cambio.
 const REBUILD = {
@@ -33,7 +35,8 @@ const REBUILD = {
   disc: ['disc', 'tracks'],
   design: ['design'],
   images: ['images'],
-  booklet: ['booklet'],
+  booklet: ['booklet', 'label'],
+  label: ['label'],
 };
 
 let galleryStale = true;
@@ -67,6 +70,7 @@ subscribe(({ rebuild: which, title }) => {
   if (which === true) $('template-select').value = store.state.templateId;
   updateTracksSummary();
   schedule();
+  if (!$('tab-label').hidden && which !== 'label' && which !== true) refreshLabelPreview();
 });
 
 // Pestañas.
@@ -78,6 +82,7 @@ $('tabs').addEventListener('click', (e) => {
 export function showTab(name) {
   for (const b of $('tabs').querySelectorAll('button')) b.classList.toggle('active', b.dataset.tab === name);
   for (const n of Object.keys(panels)) $(`tab-${n}`).hidden = n !== name;
+  if (name === 'label') refreshLabelPreview();
   if (name === 'gallery' && galleryStale) {
     galleryStale = false;
     panels.gallery();
@@ -178,6 +183,7 @@ const commands = {
   example: () => { if (confirmDiscard()) { const ex = exampleProject(); setSelectedSticker(null); loadProject(ex.state, ex.assets); } },
   'export-pdf': exportPdf,
   'export-png': exportPng,
+  'export-labels': () => { showTab('label'); return exportLabelsPdf(false); },
   undo: () => undo(),
   redo: () => redo(),
   'zoom-in': zoomIn,
@@ -331,7 +337,7 @@ async function start() {
   const smoke = await window.api.smokeDir();
   if (smoke) {
     const { runSmoke } = await import('./smoke.js');
-    runSmoke({ commands, showTab, exportPdf, exportPng, commit, openPaste });
+    runSmoke({ commands, showTab, exportPdf, exportPng, commit, openPaste, exportLabelsPdf, exportLabelPng });
   }
 }
 

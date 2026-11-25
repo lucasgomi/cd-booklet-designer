@@ -76,6 +76,7 @@ function buildMenu() {
       { type: 'separator' },
       { label: 'Exportar PDF (A4, tamaño real)…', accelerator: 'CmdOrCtrl+P', click: () => send('export-pdf') },
       { label: 'Exportar PNG (300 ppp)…', accelerator: 'CmdOrCtrl+Shift+P', click: () => send('export-png') },
+      { label: 'Exportar pegatinas del CD (PDF)…', click: () => send('export-labels') },
       { type: 'separator' },
       { role: 'quit', label: 'Salir' },
     ] },
@@ -177,6 +178,41 @@ async function exportPdf(payload, filePath) {
       margins: { marginType: 'none' },
     });
     fs.writeFileSync(filePath, pdf);
+  } finally {
+    win.destroy();
+  }
+}
+
+/** Hoja de pegatinas (o de prueba) en PDF a tamaño real, en vertical. */
+async function exportLabels(payload, filePath, test) {
+  const win = await renderJob({ ...payload, mode: test ? 'labels-test' : 'labels' });
+  try {
+    const pdf = await win.webContents.printToPDF({
+      landscape: false,
+      pageSize: 'A4',
+      printBackground: true,
+      preferCSSPageSize: true,
+      margins: { marginType: 'none' },
+    });
+    fs.writeFileSync(filePath, pdf);
+  } finally {
+    win.destroy();
+  }
+}
+
+/** Una pegatina sola en PNG a 300 ppp (para imprentas o para verla). */
+async function exportLabelPng(payload, filePath) {
+  const size = Math.round((payload.sheet?.diameter || 117) * (PNG_DPI / 25.4));
+  const win = await renderJob({ ...payload, mode: 'label-png', dpi: PNG_DPI }, { offscreen: true, width: size, height: size });
+  try {
+    win.setContentSize(size, size);
+    await new Promise((r) => setTimeout(r, 400));
+    const image = await win.webContents.capturePage({ x: 0, y: 0, width: size, height: size });
+    let png = image.toPNG();
+    const got = image.getSize();
+    if (got.width !== size || got.height !== size) png = image.resize({ width: size, height: size, quality: 'best' }).toPNG();
+    fs.writeFileSync(filePath, withDpi(png, PNG_DPI));
+    return { width: size, height: size };
   } finally {
     win.destroy();
   }
@@ -290,6 +326,22 @@ ipcMain.handle('export:png', async (_e, payload) => {
     [{ name: 'Imagen PNG', extensions: ['png'] }]);
   if (!file) return null;
   const size = await exportPng(payload, file);
+  return { path: file, ...size };
+});
+
+ipcMain.handle('export:labels', async (_e, payload, { test = false } = {}) => {
+  const name = test ? 'hoja-de-prueba-pegatinas' : `${safeName(payload.suggestedName) || 'disco'} - pegatina`;
+  const file = await askSavePath(test ? 'Hoja de prueba' : 'Exportar pegatinas', `${name}.pdf`, [{ name: 'PDF', extensions: ['pdf'] }]);
+  if (!file) return null;
+  await exportLabels(payload, file, test);
+  return { path: file };
+});
+
+ipcMain.handle('export:label-png', async (_e, payload) => {
+  const file = await askSavePath('Exportar pegatina', `${safeName(payload.suggestedName) || 'disco'} - pegatina.png`,
+    [{ name: 'Imagen PNG', extensions: ['png'] }]);
+  if (!file) return null;
+  const size = await exportLabelPng(payload, file);
   return { path: file, ...size };
 });
 

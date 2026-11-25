@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld('api', {
   pathForFile: (file) => { try { return webUtils.getPathForFile(file); } catch { return ''; } },
   exportPdf: invoke('export:pdf'),
   exportPng: invoke('export:png'),
+  exportLabels: invoke('export:labels'),
+  exportLabelPng: invoke('export:label-png'),
   showInFolder: invoke('shell:show'),
   openPath: invoke('shell:open'),
   listTemplates: invoke('templates:list'),

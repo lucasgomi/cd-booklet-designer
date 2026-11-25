@@ -45,7 +45,7 @@ async function runLong(n, showTab) {
   await window.api.smokeDone(report);
 }
 
-export async function runSmoke({ commands, showTab }) {
+export async function runSmoke({ commands, showTab, exportLabelsPdf, exportLabelPng }) {
   const longN = await window.api.smokeLong();
   if (longN) { window.confirm = () => true; await wait(1200); await runLong(longN, showTab); return; }
   const report = { steps: [], errors: [] };
@@ -101,6 +101,30 @@ export async function runSmoke({ commands, showTab }) {
   });
   await exp('pdf', 'librito');
   await exp('png', 'librito');
+  // Pegatina del CD: pestaña, hoja de 3 (eligiendo la 2 y la 3), prueba y PNG.
+  await step('07b-pegatina', async () => {
+    localStorage.removeItem('cdb.labelSheet');
+    showTab('label');
+    await wait(300);
+    document.querySelectorAll('.label-map .slot')[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await wait(100);
+    document.querySelectorAll('.label-map .slot')[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await wait(100);
+    document.querySelectorAll('.label-map .slot')[2].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
+  report.labelSlots = JSON.parse(localStorage.getItem('cdb.labelSheet') || '{}').selected;
+  report.steps.push({ name: 'export-pegatinas-pdf', ok: !!(await exportLabelsPdf(false)) });
+  report.steps.push({ name: 'export-pegatinas-prueba', ok: !!(await exportLabelsPdf(true)) });
+  report.steps.push({ name: 'export-pegatina-png', ok: !!(await exportLabelPng()) });
+  await step('07c-pegatina-lista', () => commit((s) => { s.label = { ...s.label, layout: 'list', background: 'cover', dim: 0.35 }; }, { rebuild: 'label' }));
+  for (const id of ['trap-gotico', 'radio-pop']) {
+    switchTemplate(id);
+    commit((s) => { s.label = { ...s.label, layout: 'arcs', background: 'template', dim: 0 }; }, { rebuild: 'label' });
+    await wait(300);
+    report.steps.push({ name: `export-pegatina-${id}`, ok: !!(await window.api.exportLabelPng({ state: store.state, assets: usedAssets(), suggestedName: id, sheet: JSON.parse(localStorage.getItem('cdb.labelSheet')) })) });
+  }
+  commit((s) => { s.label = { ...s.label, layout: 'list', background: 'cover', dim: 0.35 }; }, { rebuild: 'label' });
+  report.steps.push({ name: 'export-pegatina-lista-png', ok: !!(await window.api.exportLabelPng({ state: store.state, assets: usedAssets(), suggestedName: 'lista', sheet: JSON.parse(localStorage.getItem('cdb.labelSheet')) })) });
   await step('08-grupos', () => {
     commit((s) => {
       s.tracks.forEach((t, i) => { t.group = i < 9 ? 'Baño María' : i < 18 ? 'Alv' : 'Tiny Desk'; });
