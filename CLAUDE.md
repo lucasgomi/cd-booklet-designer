@@ -32,6 +32,9 @@ de la misma app**, y las dos son igual de importantes:
      2. Publica la web con la misma versión.
    - No publiques la web sola salvo para arreglar un despliegue (`pages.yml`,
      manual).
+   - Cada versión de la web va en su propia carpeta (`/v1.8.0/…`), y la raíz
+     solo redirige. Así el navegador no mezcla archivos en caché de
+     versiones distintas: no lo cambies.
    - Desde Claude Code: `gh api -X POST repos/lucasgomi/cd-booklet-designer/actions/workflows/build.yml/dispatches -f ref=main -f 'inputs[release]=vX.Y.Z'`.
 4. **Textos de ejemplo genéricos.** El proyecto de ejemplo
    (`src/renderer/example.js`) y los textos de muestra usan nombres

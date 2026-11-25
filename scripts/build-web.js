@@ -16,21 +16,31 @@ if (!fs.existsSync(path.join(src, 'vendor', 'fonts.js'))) {
   process.exit(1);
 }
 fs.rmSync(out, { recursive: true, force: true });
+// Cada versión va en su carpeta (v1.8.0/…): así el navegador nunca mezcla
+// archivos en caché de una versión anterior con los nuevos.
+const ver = `v${pkg.version}`;
+const app = path.join(out, ver);
 for (const dir of ['renderer', 'shared', 'print', 'vendor', 'web']) {
-  fs.cpSync(path.join(src, dir), path.join(out, dir), { recursive: true, filter: (f) => !f.endsWith('.map') });
+  fs.cpSync(path.join(src, dir), path.join(app, dir), { recursive: true, filter: (f) => !f.endsWith('.map') });
 }
-fs.writeFileSync(path.join(out, 'web', 'build-info.js'), `export const VERSION = ${JSON.stringify(`${pkg.version} (web)`)};\n`);
-fs.copyFileSync(path.join(root, 'build', 'icon.png'), path.join(out, 'icon.png'));
-fs.writeFileSync(path.join(out, 'index.html'), `<!doctype html>
+fs.writeFileSync(path.join(app, 'web', 'build-info.js'), `export const VERSION = ${JSON.stringify(`${pkg.version} (web)`)};\n`);
+const redirect = (to) => `<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="refresh" content="0; url=renderer/index.html">
-  <link rel="icon" href="icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="refresh" content="0; url=${to}">
   <title>CD Booklet Designer</title>
+  <script>location.replace(${JSON.stringify(to)} + location.hash);</script>
 </head>
-<body><a href="renderer/index.html">Abrir CD Booklet Designer</a></body>
+<body><a href="${to}">Abrir CD Booklet Designer</a></body>
 </html>
-`);
+`;
+fs.copyFileSync(path.join(root, 'build', 'icon.png'), path.join(out, 'icon.png'));
+fs.writeFileSync(path.join(out, 'index.html'), redirect(`${ver}/renderer/index.html`));
+// Enlaces antiguos a /renderer/index.html.
+fs.mkdirSync(path.join(out, 'renderer'));
+fs.writeFileSync(path.join(out, 'renderer', 'index.html'), redirect(`../${ver}/renderer/index.html`));
 fs.writeFileSync(path.join(out, '.nojekyll'), '');
-console.log(`Web lista en ${path.relative(root, out)}/ (versión ${pkg.version})`);
+console.log(`Web lista en ${path.relative(root, out)}/${ver}/ (versión ${pkg.version})`);
