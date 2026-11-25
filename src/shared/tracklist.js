@@ -148,3 +148,25 @@ export function titlesFromFilenames(names) {
   const numbered = items.every((i) => i.number != null);
   return items.sort((a, b) => (numbered ? a.number - b.number : 0) || a.name.localeCompare(b.name, 'es', { numeric: true }));
 }
+
+// Palabras que van en minúscula en «Tipo Título» (salvo al principio).
+const SMALL = new Set(['a', 'al', 'con', 'de', 'del', 'e', 'el', 'en', 'la', 'las', 'lo', 'los', 'o', 'para', 'por', 'sin', 'u', 'un', 'una', 'y',
+  'and', 'at', 'feat.', 'ft.', 'for', 'in', 'of', 'on', 'or', 'the', 'to', 'vs.']);
+
+/** Herramientas para los títulos de la lista. */
+export const TITLE_TOOLS = {
+  title: (t) => t.toLowerCase().replace(/(^|[\s(\[/"«¿¡-])([\p{L}\p{N}][\p{L}\p{N}'.]*)/gu, (m, pre, w, i) => {
+    const first = i === 0 || /[(\[/"«¿¡-]/.test(pre);
+    return pre + (!first && SMALL.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1));
+  }),
+  upper: (t) => t.toUpperCase(),
+  lower: (t) => t.toLowerCase(),
+  noFeat: (t) => t.replace(/\s*[([]\s*(feat\.?|ft\.?|featuring|con)\s[^)\]]*[)\]]/gi, '').replace(/\s+(feat\.?|ft\.?|featuring)\s.*$/i, '').trim(),
+  noParens: (t) => t.replace(/\s*[([][^)\]]*[)\]]/g, '').trim() || t,
+  noNumbers: (t) => t.replace(/^\s*#?\d{1,3}\s*[.)\-–—:]?\s+/, ''),
+};
+
+/** La lista como texto («1. Título – 3:04»), para copiar y pegar. */
+export function tracksToText(tracks, format) {
+  return tracks.map((t, i) => `${i + 1}. ${t.title}${t.duration != null ? ` – ${format(t.duration)}` : ''}`).join('\n');
+}

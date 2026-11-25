@@ -487,3 +487,4 @@ body.label-mode .stage-bar > :not(.label-only):not(.spacer):not(#toggle-preview)
 .lt-handle.lt-size { right: 0; bottom: 0; cursor: nwse-resize; }
 .lt-handle.lt-rot { left: 50%; cursor: grab; }
 .lt-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.tools-menu { width: auto; flex: none; }

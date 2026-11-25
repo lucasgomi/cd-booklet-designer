@@ -80,6 +80,36 @@ const svgEl = (tag, attrs = {}) => {
 };
 const PT = 0.3528; // mm por punto
 
+/** Desplazamientos del efecto 3D / sombra larga: muchas copias pegadas. */
+function extrudeSteps(T) {
+  const depth = Math.max(0.1, T.effectDepth ?? 1.5);
+  const a = ((T.effectAngle ?? 45) * Math.PI) / 180;
+  const n = Math.min(40, Math.max(2, Math.round(depth / 0.12)));
+  return Array.from({ length: n }, (_, i) => {
+    const d = (depth * (i + 1)) / n;
+    return { x: Math.cos(a) * d, y: Math.sin(a) * d, k: (i + 1) / n };
+  });
+}
+
+/** text-shadow de los efectos para los textos rectos (HTML). */
+function effectShadows(T, fontMm) {
+  const c = T.effectColor || '#000000';
+  const mm = (v) => `${v.toFixed(2)}mm`;
+  switch (T.effect) {
+    case '3d': return extrudeSteps(T).map((s) => `${mm(s.x)} ${mm(s.y)} 0 ${c}`);
+    case 'long': return extrudeSteps(T).map((s) => `${mm(s.x)} ${mm(s.y)} 0 ${rgba(c, 1 - s.k * 0.85)}`);
+    case 'shadow': {
+      const [s] = extrudeSteps(T).slice(-1);
+      return [`${mm(s.x)} ${mm(s.y)} ${mm(fontMm * 0.12 + 0.3)} ${rgba(c, 0.75)}`];
+    }
+    case 'double': {
+      const d = Math.max(0.15, (T.effectDepth ?? 1.5) * 0.5);
+      return Array.from({ length: 16 }, (_, i) => { const a = (i / 16) * Math.PI * 2; return `${mm(Math.cos(a) * d)} ${mm(Math.sin(a) * d)} 0 ${c}`; });
+    }
+    default: return [];
+  }
+}
+
 function backgroundLayer(L, state, assets, S, afterMount) {
   const bg = h('div', { style: { position: 'absolute', inset: 0, overflow: 'hidden', background: L.color } });
   const photo = (url) => {
@@ -218,6 +248,7 @@ export function renderLabel(state, assets, { diameter = 117, hole = 41, bleed = 
       try {
         const len = t.getComputedTextLength();
         if (full && (stretch || len > max)) { t.setAttribute('textLength', max); t.setAttribute('lengthAdjust', len > max ? 'spacingAndGlyphs' : 'spacing'); } else if (!full && len > max) { t.setAttribute('textLength', max); t.setAttribute('lengthAdjust', 'spacingAndGlyphs'); }
+        for (const k of t._copies || []) for (const a of ['textLength', 'lengthAdjust']) if (t.hasAttribute(a)) k.setAttribute(a, t.getAttribute(a));
       } catch { /* sin medidas (fuera del DOM) */ }
     });
     return t;
@@ -252,15 +283,39 @@ export function renderLabel(state, assets, { diameter = 117, hole = 41, bleed = 
       const t = arcText(raw, T, { r, top, attrs: { 'data-ltext': T.id, 'data-r': r.toFixed(2) } });
       if (!t) continue;
       const g = svgEl('g', { transform: `rotate(${T.angle || 0} ${c} ${c})` });
+      // Efectos en curva: copias del texto por detrás (relieve, sombra o doble contorno).
+      if (T.effect && T.effect !== 'none') {
+        const ec = T.effectColor || '#000000';
+        const copy = (dx, dy, attrs) => {
+          const k = t.cloneNode(true);
+          k.removeAttribute('data-ltext');
+          k.removeAttribute('filter');
+          k.setAttribute('transform', `translate(${dx.toFixed(3)} ${dy.toFixed(3)})`);
+          for (const [a, v] of Object.entries(attrs)) k.setAttribute(a, v);
+          (t._copies ||= []).push(k);
+          g.appendChild(k);
+        };
+        if (T.effect === '3d' || T.effect === 'long') {
+          for (const st of extrudeSteps(T).reverse()) copy(st.x, st.y, { fill: ec, stroke: ec, 'stroke-width': fontMm * 0.04, opacity: T.effect === 'long' ? (1 - st.k * 0.85).toFixed(3) : 1 });
+        } else if (T.effect === 'shadow') {
+          const [st] = extrudeSteps(T).slice(-1);
+          copy(st.x, st.y, { fill: ec, stroke: 'none', opacity: 0.6 });
+        } else if (T.effect === 'double') {
+          const w = (T.outline ? fontMm * (T.outlineWidth ?? 0.16) : 0) + Math.max(0.3, (T.effectDepth ?? 1.5));
+          copy(0, 0, { fill: ec, stroke: ec, 'stroke-width': w, 'stroke-linejoin': 'round' });
+        }
+      }
       g.appendChild(t);
       if (editor) t.style.pointerEvents = 'auto';
       svg.appendChild(g);
     } else {
       const shadow = T.outline ? { WebkitTextStroke: `${(fontMm * (T.outlineWidth ?? 0.16) * 2).toFixed(2)}mm ${T.outlineColor}`, paintOrder: 'stroke fill' } : {};
+      const shadows = effectShadows(T, fontMm);
       if (T.glow > 0) {
         const g = fontMm * 0.35 * T.glow;
-        shadow.textShadow = `0 0 ${(g * 0.5).toFixed(2)}mm ${T.glowColor}, 0 0 ${g.toFixed(2)}mm ${T.glowColor}, 0 0 ${(g * 2).toFixed(2)}mm ${T.glowColor}`;
+        shadows.unshift(`0 0 ${(g * 0.5).toFixed(2)}mm ${T.glowColor}`, `0 0 ${g.toFixed(2)}mm ${T.glowColor}`, `0 0 ${(g * 2).toFixed(2)}mm ${T.glowColor}`);
       }
+      if (shadows.length) shadow.textShadow = shadows.join(', ');
       free.push(h('div', {
         'data-ltext': T.id,
         text: raw,

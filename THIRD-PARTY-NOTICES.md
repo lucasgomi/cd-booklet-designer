@@ -14,7 +14,7 @@ Fontsource) no se redistribuyen: se piden a su origen. Todas son libres para
 uso personal y comercial; lo único que no se permite es vender las propias
 tipografías.
 
-## Tipografías incluidas (73)
+## Tipografías incluidas (122)
 
 | Tipografía | Licencia |
 | --- | --- |
@@ -91,6 +91,55 @@ tipografías.
 | [Titan One](https://fonts.google.com/specimen/Titan+One) | OFL-1.1 |
 | [Fugaz One](https://fonts.google.com/specimen/Fugaz+One) | OFL-1.1 |
 | [Playfair Display SC](https://fonts.google.com/specimen/Playfair+Display+SC) | OFL-1.1 |
+| [Honk](https://fonts.google.com/specimen/Honk) | OFL-1.1 |
+| [Bungee Shade](https://fonts.google.com/specimen/Bungee+Shade) | OFL-1.1 |
+| [Bungee Outline](https://fonts.google.com/specimen/Bungee+Outline) | OFL-1.1 |
+| [Bungee Inline](https://fonts.google.com/specimen/Bungee+Inline) | OFL-1.1 |
+| [Bungee Tint](https://fonts.google.com/specimen/Bungee+Tint) | OFL-1.1 |
+| [Rampart One](https://fonts.google.com/specimen/Rampart+One) | OFL-1.1 |
+| [Train One](https://fonts.google.com/specimen/Train+One) | OFL-1.1 |
+| [Rubik Doodle Shadow](https://fonts.google.com/specimen/Rubik+Doodle+Shadow) | OFL-1.1 |
+| [Rubik 80s Fade](https://fonts.google.com/specimen/Rubik+80s+Fade) | OFL-1.1 |
+| [Rubik Puddles](https://fonts.google.com/specimen/Rubik+Puddles) | OFL-1.1 |
+| [Rubik Beastly](https://fonts.google.com/specimen/Rubik+Beastly) | OFL-1.1 |
+| [Rubik Vinyl](https://fonts.google.com/specimen/Rubik+Vinyl) | OFL-1.1 |
+| [Rubik Maze](https://fonts.google.com/specimen/Rubik+Maze) | OFL-1.1 |
+| [Foldit](https://fonts.google.com/specimen/Foldit) | OFL-1.1 |
+| [Monofett](https://fonts.google.com/specimen/Monofett) | OFL-1.1 |
+| [Faster One](https://fonts.google.com/specimen/Faster+One) | OFL-1.1 |
+| [Codystar](https://fonts.google.com/specimen/Codystar) | OFL-1.1 |
+| [Kablammo](https://fonts.google.com/specimen/Kablammo) | OFL-1.1 |
+| [Plaster](https://fonts.google.com/specimen/Plaster) | OFL-1.1 |
+| [Fascinate](https://fonts.google.com/specimen/Fascinate) | OFL-1.1 |
+| [Tilt Prism](https://fonts.google.com/specimen/Tilt+Prism) | OFL-1.1 |
+| [Tilt Warp](https://fonts.google.com/specimen/Tilt+Warp) | OFL-1.1 |
+| [Tilt Neon](https://fonts.google.com/specimen/Tilt+Neon) | OFL-1.1 |
+| [Lilita One](https://fonts.google.com/specimen/Lilita+One) | OFL-1.1 |
+| [Luckiest Guy](https://fonts.google.com/specimen/Luckiest+Guy) | Apache-2.0 |
+| [Chewy](https://fonts.google.com/specimen/Chewy) | Apache-2.0 |
+| [Boogaloo](https://fonts.google.com/specimen/Boogaloo) | OFL-1.1 |
+| [Spicy Rice](https://fonts.google.com/specimen/Spicy+Rice) | OFL-1.1 |
+| [Sonsie One](https://fonts.google.com/specimen/Sonsie+One) | OFL-1.1 |
+| [Bowlby One SC](https://fonts.google.com/specimen/Bowlby+One+SC) | OFL-1.1 |
+| [Chango](https://fonts.google.com/specimen/Chango) | OFL-1.1 |
+| [Fredoka](https://fonts.google.com/specimen/Fredoka) | OFL-1.1 |
+| [Comfortaa](https://fonts.google.com/specimen/Comfortaa) | OFL-1.1 |
+| [Quicksand](https://fonts.google.com/specimen/Quicksand) | OFL-1.1 |
+| [Josefin Sans](https://fonts.google.com/specimen/Josefin+Sans) | OFL-1.1 |
+| [Russo One](https://fonts.google.com/specimen/Russo+One) | OFL-1.1 |
+| [Teko](https://fonts.google.com/specimen/Teko) | OFL-1.1 |
+| [Big Shoulders Display](https://fonts.google.com/specimen/Big+Shoulders+Display) | OFL-1.1 |
+| [Staatliches](https://fonts.google.com/specimen/Staatliches) | OFL-1.1 |
+| [Fjalla One](https://fonts.google.com/specimen/Fjalla+One) | OFL-1.1 |
+| [Barlow Condensed](https://fonts.google.com/specimen/Barlow+Condensed) | OFL-1.1 |
+| [Rubik](https://fonts.google.com/specimen/Rubik) | OFL-1.1 |
+| [Dancing Script](https://fonts.google.com/specimen/Dancing+Script) | OFL-1.1 |
+| [Satisfy](https://fonts.google.com/specimen/Satisfy) | Apache-2.0 |
+| [Kaushan Script](https://fonts.google.com/specimen/Kaushan+Script) | OFL-1.1 |
+| [Yellowtail](https://fonts.google.com/specimen/Yellowtail) | Apache-2.0 |
+| [EB Garamond](https://fonts.google.com/specimen/EB+Garamond) | OFL-1.1 |
+| [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville) | OFL-1.1 |
+| [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans) | OFL-1.1 |
 
 ## Bibliotecas
 

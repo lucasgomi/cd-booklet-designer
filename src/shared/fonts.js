@@ -13,6 +13,8 @@ export const FONT_CATEGORIES = [
   { id: 'mono', label: 'Monoespaciadas' },
 ];
 export const FONT_TAGS = [
+  { id: '3d', label: '3D / relieve' },
+  { id: 'color', label: 'De color' },
   { id: 'gotica', label: 'Góticas' },
   { id: 'graffiti', label: 'Grafiti / rotulador' },
   { id: 'retro', label: 'Retro' },

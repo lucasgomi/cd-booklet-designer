@@ -29,6 +29,8 @@ const TAGS = {
   caligrafia: { re: /script|vibes|pinyon|parisienne|allura|tangerine|italianno|alex brush|dancing|great|petit formal|rouge|monsieur|mrs|herr von|lovers quarrel|ballet|whisper|corinthia|birthstone|imperial/i, names: [] },
   maquina: { re: /typewriter|special elite|courier|cutive|courier prime|kosugi/i, names: ['Special Elite', 'Courier Prime', 'Cutive Mono', 'Cutive', 'Anonymous Pro', 'Xanh Mono'] },
   condensada: { re: /condensed|narrow|compressed|anton|bebas|oswald|league gothic|fjalla|six caps|teko|big shoulders|saira extra|barlow condensed|antonio|smooch sans/i, names: [] },
+  '3d': { re: /shade|shadow|outline|inline|3d|\biso\b|extrude|fade|highlight|prism|rampart|train one|foldit|nabla|honk|monofett|faster one|codystar|kablammo|plaster|fascinate|sonsie|bungee (spice|tint|hairline)|rubik (puddles|vinyl|maze|beastly|lines|microbe|storm|doodle)|londrina|bungee shade|emblema|tilt warp/i,
+    names: ['Nabla', 'Honk', 'Bungee Shade', 'Bungee Spice', 'Bungee Outline', 'Bungee Inline', 'Rampart One', 'Train One', 'Foldit', 'Monofett', 'Faster One', 'Codystar', 'Kablammo', 'Plaster', 'Fascinate', 'Tilt Prism', 'Tilt Warp', 'Monoton'] },
   elegante: { re: /didone|bodoni|playfair|cormorant|cinzel|italiana|marcellus|gloock|instrument serif|dm serif|prata|forum|bellefair|gilda|abhaya|rozha|yeseva|libre caslon|eb garamond|young serif|fraunces|bodoni moda/i, names: [] },
 };
 
@@ -42,6 +44,7 @@ const load = async (file, url) => JSON.parse(file ? fs.readFileSync(file, 'utf8'
 const tagsFor = (family, cat) => {
   const tags = Object.entries(TAGS).filter(([, t]) => t.names.includes(family) || t.re.test(family)).map(([k]) => k);
   if (tags.includes('caligrafia') && cat !== 'hand') tags.splice(tags.indexOf('caligrafia'), 1);
+  if (tags.includes('3d') && cat === 'hand' && !TAGS['3d'].names.includes(family)) tags.splice(tags.indexOf('3d'), 1); // «Shadows Into Light» no es 3D
   return tags;
 };
 
@@ -62,7 +65,9 @@ async function main() {
     const keys = Object.keys(f.fonts);
     const weights = [...new Set(keys.map((k) => parseInt(k, 10)))].sort((a, b) => a - b);
     const cat = CATEGORY[f.category] || 'display';
-    return [f.family, cat, weights.join(','), keys.some((k) => k.endsWith('i')) ? 1 : 0, i + 1, tagsFor(f.family, cat).join(','), (f.dateAdded || '').slice(0, 4), 'g', '', fsLicense.get(f.family) || 'OFL'];
+    const tags = tagsFor(f.family, cat);
+    if ((f.colorCapabilities || []).length) tags.push('color'); // fuentes de color (COLR)
+    return [f.family, cat, weights.join(','), keys.some((k) => k.endsWith('i')) ? 1 : 0, i + 1, tags.join(','), (f.dateAdded || '').slice(0, 4), 'g', '', fsLicense.get(f.family) || 'OFL'];
   });
   const known = new Set(rows.map((r) => r[0]));
 

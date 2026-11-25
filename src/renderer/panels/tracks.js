@@ -1,9 +1,11 @@
 // Pestaña «Canciones»: lista editable, pegar texto, importar .cue, grupos.
-import { store, commit } from '../store.js';
+import { store, commit, addAsset } from '../store.js';
 import { h, section, button, toggle, colorInput, toast } from '../ui.js';
 import { parseDuration, formatDuration, totalSeconds, formatTotal, CD_LIMIT_SECONDS } from '../../shared/time.js';
-import { parsePastedText, parseCue, cueToTracks, makeTrack, titlesFromFilenames } from '../../shared/tracklist.js';
+import { parsePastedText, parseCue, cueToTracks, makeTrack, titlesFromFilenames, newId, TITLE_TOOLS, tracksToText } from '../../shared/tracklist.js';
 import { syncGroups } from '../../shared/model.js';
+import { readAudioTags } from '../../shared/audio-tags.js';
+
 
 let summaryEl = null;
 let sortable = null;
@@ -88,6 +90,7 @@ export function renderTracksPanel(root, { openPaste }) {
       button('Pegar lista…', openPaste),
       button('Importar .cue…', importCue),
       button('Añadir audios…', pickAudioFiles, { title: 'Elige tus archivos de audio (wav, mp3, flac, m4a, ogg…): se crea la lista con sus duraciones' }),
+      toolsMenu(),
       button('Vaciar', () => {
         if (state.tracks.length && confirm('¿Borrar todas las canciones?')) commit((s) => { s.tracks = []; }, { rebuild: 'tracks' });
       }, { class: 'danger' })),
@@ -111,6 +114,50 @@ export function renderTracksPanel(root, { openPaste }) {
   });
 }
 
+/** Desplegable con herramientas para toda la lista. */
+function toolsMenu() {
+  const actions = [
+    { value: 'title', label: 'Títulos en «Tipo Título»' },
+    { value: 'upper', label: 'TÍTULOS EN MAYÚSCULAS' },
+    { value: 'lower', label: 'títulos en minúsculas' },
+    { value: 'noFeat', label: 'Quitar «feat.» y colaboraciones' },
+    { value: 'noParens', label: 'Quitar lo que va entre paréntesis' },
+    { value: 'noNumbers', label: 'Quitar números del principio' },
+    { value: 'sort', label: 'Ordenar de la A a la Z' },
+    { value: 'reverse', label: 'Invertir el orden' },
+    { value: 'shuffle', label: 'Mezclar (orden aleatorio)' },
+    { value: 'dedupe', label: 'Quitar canciones repetidas' },
+    { value: 'copy', label: 'Copiar la lista como texto' },
+  ];
+  const sel = h('select', { class: 'tools-menu', title: 'Herramientas para toda la lista' },
+    h('option', { value: '', text: 'Herramientas…' }), ...actions.map((a) => h('option', { value: a.value, text: a.label })));
+  sel.addEventListener('change', async () => {
+    const k = sel.value;
+    sel.value = '';
+    if (!k || !store.state.tracks.length) return;
+    if (k === 'copy') {
+      const text = tracksToText(store.state.tracks, (d) => formatDuration(d, 'm:ss'));
+      try { await navigator.clipboard.writeText(text); toast('Lista copiada: pégala donde quieras.', 'ok'); } catch { toast('No se pudo copiar al portapapeles.', 'bad'); }
+      return;
+    }
+    commit((s) => {
+      if (TITLE_TOOLS[k]) {
+        // También la versión abreviada, si la hay.
+        for (const t of s.tracks) { t.title = TITLE_TOOLS[k](t.title); if (t.shortTitle) t.shortTitle = TITLE_TOOLS[k](t.shortTitle); }
+      } else if (k === 'sort') s.tracks.sort((a, b) => a.title.localeCompare(b.title, 'es', { numeric: true }));
+      else if (k === 'reverse') s.tracks.reverse();
+      else if (k === 'shuffle') {
+        for (let i = s.tracks.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [s.tracks[i], s.tracks[j]] = [s.tracks[j], s.tracks[i]]; }
+      } else if (k === 'dedupe') {
+        const seen = new Set();
+        s.tracks = s.tracks.filter((t) => { const key = t.title.trim().toLowerCase(); if (seen.has(key)) return false; seen.add(key); return true; });
+      }
+    }, { rebuild: 'tracks' });
+    toast(`${actions.find((a) => a.value === k).label}: hecho (Ctrl+Z para deshacer).`, 'ok');
+  });
+  return sel;
+}
+
 function pickAudioFiles() {
   const input = h('input', { type: 'file', accept: 'audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg,.opus,.aiff,.aif', multiple: true });
   input.addEventListener('change', () => importAudioFiles([...input.files]));
@@ -131,21 +178,59 @@ function audioDuration(file) {
   });
 }
 
-/** Crea canciones a partir de archivos de audio: título del nombre y duración real. */
+/** Lee una parte de un archivo (para las etiquetas, sin cargarlo entero). */
+const fileReader = (file) => async (offset, length) => new Uint8Array(await file.slice(offset, offset + length).arrayBuffer());
+
+const toDataUrl = (blob) => new Promise((resolve) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.readAsDataURL(blob); });
+
+/**
+ * Crea canciones a partir de archivos de audio. Usa sus etiquetas (título,
+ * artista, álbum, año, número de pista y carátula) y, si no tienen, el nombre
+ * del archivo. La duración se lee del propio audio.
+ */
 export async function importAudioFiles(files) {
   const audios = files.filter((f) => f.type.startsWith('audio/') || /\.(wav|mp3|flac|m4a|aac|ogg|opus|aiff?)$/i.test(f.name));
   if (!audios.length) return;
   toast(`Leyendo ${audios.length} archivo${audios.length === 1 ? '' : 's'} de audio…`, 'info', 20000);
   const byName = new Map(audios.map((f) => [f.name, f]));
-  const items = titlesFromFilenames(audios.map((f) => f.name));
-  const durations = await Promise.all(items.map((i) => audioDuration(byName.get(i.name))));
-  const tracks = items.map((i, k) => makeTrack(i.title, durations[k]));
-  const missing = durations.filter((d) => d == null).length;
+  const fromNames = new Map(titlesFromFilenames(audios.map((f) => f.name)).map((i, k) => [i.name, { ...i, order: k }]));
+  const items = await Promise.all(audios.map(async (f) => ({
+    file: f, guess: fromNames.get(f.name), tags: await readAudioTags(fileReader(f), f.size), duration: await audioDuration(f),
+  })));
+  // Orden: número de pista de las etiquetas (si lo tienen todas) o el de los nombres.
+  const tagged = items.every((i) => i.tags.track);
+  items.sort((a, b) => (tagged ? a.tags.track - b.tags.track : a.guess.order - b.guess.order));
+  const tracks = items.map((i) => makeTrack(i.tags.title || i.guess.title, i.duration));
+  const missing = items.filter((i) => i.duration == null).length;
+
+  // Datos del disco: los que comparten todas las canciones, si el disco está vacío.
+  const common = (pick) => { const v = items.map(pick).filter(Boolean); return v.length === items.length && v.every((x) => x === v[0]) ? v[0] : ''; };
+  const artist = common((i) => i.tags.albumArtist) || common((i) => i.tags.artist);
+  const album = common((i) => i.tags.album);
+  const year = common((i) => i.tags.year);
+  const picture = items.find((i) => i.tags.picture)?.tags.picture;
+  let coverId = null;
+  if (picture && !store.state.images.cover) {
+    coverId = newId('img');
+    addAsset(coverId, await toDataUrl(new Blob([picture.data], { type: picture.mime })));
+  }
+
   const replace = !store.state.tracks.length || confirm(`${tracks.length} canciones leídas. ¿Sustituir la lista actual?\n(Cancelar = añadirlas al final)`);
-  commit((s) => { s.tracks = replace ? tracks : [...s.tracks, ...tracks]; }, { rebuild: true });
-  toast(missing
-    ? `${tracks.length} canciones añadidas. ${missing} sin duración (formato que este navegador no lee): complétala a mano.`
-    : `${tracks.length} canciones añadidas con su duración. Revisa los títulos por si sobra algo del nombre del archivo.`, missing ? 'warn' : 'ok', 7000);
+  const filled = [];
+  commit((s) => {
+    s.tracks = replace ? tracks : [...s.tracks, ...tracks];
+    if (artist && (!s.disc.artist || replace)) { s.disc.artist = artist; filled.push('artista'); }
+    if (album && (!s.disc.title || replace)) { s.disc.title = album; filled.push('título del disco'); }
+    if (year && !s.disc.date) { s.disc.date = year; filled.push('fecha'); }
+    if (coverId) { s.images.cover = coverId; filled.push('portada (de la carátula)'); }
+  }, { rebuild: true });
+  const fromTags = items.filter((i) => i.tags.title).length;
+  toast([
+    `${tracks.length} canciones añadidas con su duración.`,
+    fromTags ? `${fromTags} con el título de sus etiquetas.` : 'Títulos sacados del nombre del archivo: revísalos por si sobra algo.',
+    filled.length ? `También: ${filled.join(', ')}.` : '',
+    missing ? `${missing} sin duración (formato que este navegador no lee): complétala a mano.` : '',
+  ].filter(Boolean).join(' '), missing ? 'warn' : 'ok', 9000);
 }
 
 async function importCue() {

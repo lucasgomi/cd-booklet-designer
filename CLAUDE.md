@@ -82,6 +82,9 @@ de la misma app**, y las dos son igual de importantes:
     `fetchFontCss` en `src/shared/fonts.js`. Si añades un origen, añade
     también sus dominios a la CSP de `src/renderer/index.html` y de
     `src/print/print.html`.
+  - Fuentes de color: Chrome sólo pinta las COLR, no las que traen el
+    color en SVG. Algunas de Fontsource vienen así (Nabla, Bungee Spice), y
+    esas no se incluyen: se descargan de Google, que las da en COLRv1.
 - **Guardado automático**: `src/renderer/autosave.js` guarda en IndexedDB
   cada sesión con cambios y ofrece recuperarla al arrancar. Está desactivado
   en la prueba automática.

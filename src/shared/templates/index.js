@@ -32,6 +32,9 @@ import trapGotico from './trap-gotico.js';
 import flyerBarrio from './flyer-barrio.js';
 import radioPop from './radio-pop.js';
 import collageLs from './collage-ls.js';
+import pop3d from './pop3d.js';
+import comic from './comic.js';
+import goldRecord from './gold-record.js';
 import boarding from './boarding.js';
 import gameboy from './gameboy.js';
 import postcard from './postcard.js';
@@ -39,7 +42,7 @@ import menu from './menu.js';
 
 // `category` (opcional) agrupa las plantillas en la interfaz.
 export const TEMPLATES = [headerList, ticket, twoColumns, setlist, lineup, terminal, notes, coquette, acid, bookIndex, playlist, y2k, vinyl, cassette, polaroid,
-  fanzine, brutalist, artdeco, synthwave, bauhaus, newspaper, boarding, gameboy, postcard, menu, trapGotico, flyerBarrio, radioPop, collageLs];
+  fanzine, brutalist, artdeco, synthwave, bauhaus, newspaper, boarding, gameboy, postcard, menu, trapGotico, flyerBarrio, radioPop, collageLs, pop3d, comic, goldRecord];
 
 export function templateCategories() {
   const groups = new Map();

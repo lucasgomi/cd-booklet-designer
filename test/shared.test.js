@@ -194,3 +194,57 @@ test('títulos a partir de archivos de audio', async () => {
   assert.equal(titlesFromFilenames(['1-03 Disco Dos.m4a'])[0].title, 'Disco Dos');
   assert.equal(titlesFromFilenames(['#Freemolly (Intro).wav'])[0].title, '#Freemolly (Intro)');
 });
+
+test('etiquetas de audio: ID3, FLAC y WAV', async () => {
+  const { readAudioTags } = await import('../src/shared/audio-tags.js');
+  const reader = (buf) => async (o, l) => new Uint8Array(buf.subarray(o, o + l));
+  const u32 = (n) => Buffer.from([(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255]);
+  const le = (n) => { const b = Buffer.alloc(4); b.writeUInt32LE(n); return b; };
+  // ID3v2.3: título en UTF-16 con BOM, resto en latin1 y una carátula PNG.
+  const frame = (id, body) => Buffer.concat([Buffer.from(id), u32(body.length), Buffer.from([0, 0]), body]);
+  const utf16 = Buffer.concat([Buffer.from([1, 0xff, 0xfe]), Buffer.from('Canción Ñ', 'utf16le')]);
+  const pic = Buffer.concat([Buffer.from([0]), Buffer.from('image/png\0'), Buffer.from([3]), Buffer.from('\0'), Buffer.from([0x89, 0x50, 0x4e, 0x47])]);
+  const frames = Buffer.concat([frame('TIT2', utf16), frame('TPE1', Buffer.from('\0Artista X')), frame('TALB', Buffer.from('\0Disco Y')),
+    frame('TRCK', Buffer.from('\x003/12')), frame('TYER', Buffer.from('\x002024')), frame('APIC', pic)]);
+  const ss = (n) => Buffer.from([(n >> 21) & 127, (n >> 14) & 127, (n >> 7) & 127, n & 127]);
+  const mp3 = Buffer.concat([Buffer.from('ID3'), Buffer.from([3, 0, 0]), ss(frames.length), frames, Buffer.alloc(64)]);
+  const a = await readAudioTags(reader(mp3), mp3.length);
+  assert.equal(a.title, 'Canción Ñ');
+  assert.equal(a.artist, 'Artista X');
+  assert.equal(a.album, 'Disco Y');
+  assert.equal(a.track, 3);
+  assert.equal(a.year, '2024');
+  assert.equal(a.picture.mime, 'image/png');
+  assert.equal(a.picture.data.length, 4);
+  // FLAC con comentarios Vorbis.
+  const comments = ['TITLE=Tema', 'ARTIST=Grupo', 'ALBUM=Álbum', 'TRACKNUMBER=7', 'DATE=1999-05-01'].map((c) => { const b = Buffer.from(c); return Buffer.concat([le(b.length), b]); });
+  const vc = Buffer.concat([le(3), Buffer.from('lib'), le(comments.length), ...comments]);
+  const flac = Buffer.concat([Buffer.from('fLaC'), Buffer.from([0x84, (vc.length >> 16) & 255, (vc.length >> 8) & 255, vc.length & 255]), vc]);
+  const f = await readAudioTags(reader(flac), flac.length);
+  assert.deepEqual([f.title, f.artist, f.album, f.track, f.year], ['Tema', 'Grupo', 'Álbum', 7, '1999']);
+  // WAV con LIST/INFO después de los datos.
+  const sub = (id, v) => { const b = Buffer.from(`${v}\0`); const pad = b.length & 1 ? Buffer.alloc(1) : Buffer.alloc(0); return Buffer.concat([Buffer.from(id), le(b.length), b, pad]); };
+  const info = Buffer.concat([Buffer.from('INFO'), sub('INAM', 'Pista WAV'), sub('IART', 'Alguien')]);
+  const data = Buffer.alloc(10);
+  const body = Buffer.concat([Buffer.from('WAVE'), Buffer.from('data'), le(data.length), data, Buffer.from('LIST'), le(info.length), info]);
+  const wav = Buffer.concat([Buffer.from('RIFF'), le(body.length), body]);
+  const w = await readAudioTags(reader(wav), wav.length);
+  assert.equal(w.title, 'Pista WAV');
+  assert.equal(w.artist, 'Alguien');
+  assert.deepEqual(await readAudioTags(reader(Buffer.from('nada de nada')), 12), {});
+});
+
+test('herramientas para los títulos', async () => {
+  const { TITLE_TOOLS } = await import('../src/shared/tracklist.js');
+  assert.equal(TITLE_TOOLS.title('EL ÚLTIMO TREN DE LA NOCHE'), 'El Último Tren de la Noche');
+  assert.equal(TITLE_TOOLS.title('volver a empezar (en directo)'), 'Volver a Empezar (En Directo)');
+  assert.equal(TITLE_TOOLS.noFeat('Lambo Amarillo (feat. Alguien)'), 'Lambo Amarillo');
+  assert.equal(TITLE_TOOLS.noFeat('Tema ft. Otro'), 'Tema');
+  assert.equal(TITLE_TOOLS.noParens('Luces (Remix) [Live]'), 'Luces');
+  assert.equal(TITLE_TOOLS.noNumbers('07 - Satélite'), 'Satélite');
+  assert.equal(TITLE_TOOLS.noNumbers('1999'), '1999');
+});
+
+test('abreviatura sin «the» tras «Live at»', () => {
+  assert.equal(abbreviationCandidates('Luces (Live at the Royal Albert Hall)')[0], 'Luces (Royal Albert Hall)');
+});

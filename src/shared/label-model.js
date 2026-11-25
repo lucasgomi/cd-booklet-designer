@@ -28,6 +28,10 @@ export function newLabelText(over = {}) {
     opacity: 1,
     glow: 0,             // resplandor tipo neón (0 = nada, 1 = mucho)
     glowColor: '#FFFFFF',
+    effect: 'none',      // none | 3d | shadow | long | double
+    effectColor: '#000000',
+    effectDepth: 1.5,    // mm
+    effectAngle: 45,     // grados (hacia dónde cae el relieve o la sombra)
     ...over,
   };
 }
@@ -169,6 +173,34 @@ export const LABEL_PRESETS = [
       newLabelText({ text: '{titulo}', font: 'Archivo Black', weight: 400, size: 18, color: '#111111', outline: false, uppercase: true, x: 0, y: -31, angle: -6 }),
       newLabelText({ text: '{artista}', font: 'Space Mono', weight: 700, size: 8, color: '#111111', outline: false, uppercase: true, spacing: 0.1, x: 0, y: 33 }),
       newLabelText({ text: '{pistas} temas · {total}', path: 'bottom', font: 'Space Mono', weight: 400, size: 6, color: '#111111', outline: false, uppercase: true, offset: 5 }),
+    ] }),
+  },
+  {
+    id: 'pop3d', name: 'Pop 3D',
+    make: () => ({ background: 'rays', color: '#FFD23F', color2: '#FFC21A', angle: 0, dim: 0, texts: [
+      newLabelText({ text: '{titulo}', font: 'Bungee', weight: 400, size: 19, color: '#FFFFFF', outline: true, outlineColor: '#111111', outlineWidth: 0.1, effect: '3d', effectColor: '#E4002B', effectDepth: 1.8, effectAngle: 50, x: 0, y: -32, angle: -4, uppercase: true }),
+      newLabelText({ text: '{artista}', path: 'bottom', font: 'Bungee', weight: 400, size: 9, color: '#111111', outline: false, offset: 6 }),
+    ] }),
+  },
+  {
+    id: 'comic', name: 'Cómic',
+    make: () => ({ background: 'rays', color: '#3DB7FF', color2: '#2AA4EE', angle: 3, dim: 0, edge: { show: true, color: '#111111', width: 1, inset: 0 }, texts: [
+      newLabelText({ text: '{titulo}!', font: 'Bangers', weight: 400, size: 26, color: '#FFE45C', outline: true, outlineColor: '#111111', outlineWidth: 0.12, effect: 'double', effectColor: '#FFFFFF', effectDepth: 0.9, x: 0, y: -31, angle: -7, uppercase: true, spacing: 0.04 }),
+      newLabelText({ text: '{artista}', font: 'Bangers', weight: 400, size: 12, color: '#FFFFFF', outline: true, outlineColor: '#111111', outlineWidth: 0.14, effect: 'shadow', effectColor: '#111111', effectDepth: 0.8, x: 0, y: 34, angle: -3, uppercase: true }),
+    ] }),
+  },
+  {
+    id: 'retro3d', name: 'Retro 3D',
+    make: () => ({ background: 'rings', color: '#F6E7C8', color2: '#F2D9A8', dim: 0, texts: [
+      newLabelText({ text: '{titulo}', path: 'top', font: 'Rubik Mono One', weight: 400, size: 13, color: '#F25C2A', outline: false, effect: 'long', effectColor: '#5A2A12', effectDepth: 2.5, effectAngle: 60, uppercase: true, offset: 6 }),
+      newLabelText({ text: '{artista}', path: 'bottom', font: 'Rubik Mono One', weight: 400, size: 7, color: '#5A2A12', outline: false, spacing: 0.15, uppercase: true, offset: 7 }),
+    ] }),
+  },
+  {
+    id: 'iso', name: 'Isométrico',
+    make: () => ({ background: 'color', color: '#14122B', dim: 0, texts: [
+      newLabelText({ text: '{titulo}', font: 'Nabla', weight: 400, size: 24, color: '#FFFFFF', outline: false, x: 0, y: -32 }),
+      newLabelText({ text: '{artista}', path: 'bottom', font: 'Tilt Neon', weight: 400, size: 10, color: '#FFFFFF', outline: false, glow: 0.6, glowColor: '#7FD3FF', offset: 6 }),
     ] }),
   },
   {

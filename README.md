@@ -60,8 +60,16 @@ Para montarla en local: `npm run build:web` y servir la carpeta `dist-web/`.
   que acompaña al `.cue`.
 - *Añadir audios…* (o arrastrar los archivos a la ventana): con tus `.wav`,
   `.mp3`, `.flac`, `.m4a`, `.ogg`… crea la lista con la duración exacta de
-  cada uno. El título sale del nombre del archivo: quita el número de pista,
-  la extensión y el «Artista - » si todos lo llevan.
+  cada uno.
+  - Lee sus etiquetas (MP3, FLAC y WAV): título, número de pista, artista,
+    álbum y año. Con ellas rellena los datos del disco que estén vacíos, y
+    la carátula pasa a ser la portada si no había.
+  - Si no tienen etiquetas, el título sale del nombre del archivo: quita el
+    número de pista, la extensión y el «Artista - » si todos lo llevan.
+- *Herramientas…*: poner los títulos en «Tipo Título», en mayúsculas o en
+  minúsculas; quitar los «feat.», lo que va entre paréntesis o los números
+  del principio; ordenar de la A a la Z, invertir o mezclar; quitar
+  repetidas; y copiar la lista como texto.
 - Para reordenar, arrastra las filas por el asa `⋮⋮`.
 - Grupos: activa *Colorear los números según el grupo* y elige un color
   para cada grupo (por ejemplo, el álbum de origen).
@@ -148,6 +156,15 @@ Radio de Los Santos (inspiradas en la emisora Non Stop Pop de GTA V):
     silueta de la ciudad, palmera, sol, nota musical, estrella y una viñeta
     con los datos. Estilos Vinewood, Vice, Noche y Desierto.
 
+Pop y objetos:
+
+30. **Pop 3D**: rayos de sol, título enorme con relieve 3D y la lista en una
+    tarjeta con borde grueso y sombra dura.
+31. **Cómic**: trama de puntos, título en un estallido, bocadillo con el
+    artista, «¡POW!» y la lista en una viñeta.
+32. **Disco de oro**: certificado enmarcado con el disco dorado y la lista
+    grabada en una placa. Estilos Oro, Platino, Diamante y Terciopelo rojo.
+
 Cada plantilla trae **estilos incluidos**: combinaciones de colores y
 letras que se aplican con un clic y se deshacen con Ctrl+Z.
 
@@ -158,7 +175,7 @@ adorno en la vista previa y pulsar «Ocultar» (Ctrl+Z lo recupera).
 
 Todo lo visual se ajusta desde la interfaz:
 - colores, con selector y campo hexadecimal;
-- tipografías de título y de lista, con grosor y tamaño. Se incluyen 73
+- tipografías de título y de lista, con grosor y tamaño. Se incluyen 122
   familias de Google Fonts (con cursivas, manuscritas, góticas y de píxeles) que funcionan sin conexión, y se puede añadir
   cualquier otra por su nombre (necesita Internet);
 - textos;
@@ -233,7 +250,8 @@ discos. También se pueden exportar e importar como archivo
   se mueven y los curvos giran alrededor del disco.
 - **Estilos rápidos** para empezar: Portada, CD-R a rotulador, Vinilo,
   Degradado, Minimal, Lista en anillo, Neón, Retro 70s, Arcoíris,
-  Holográfico, Gótico, Brutalista, Disco con foto y Estilo de la plantilla.
+  Holográfico, Gótico, Brutalista, Pop 3D, Cómic, Retro 3D, Isométrico,
+  Disco con foto y Estilo de la plantilla.
 - **Fondo**:
   - Fuentes: la portada, una imagen tuya (con zoom y posición), el estilo
     de la plantilla, un color liso o un degradado (lineal, del centro o
@@ -243,7 +261,8 @@ discos. También se pueden exportar e importar como archivo
   - Se puede oscurecer para que los textos se lean bien.
 - **Textos**: tantos como quieras, rectos o en curva (arriba o abajo).
   - Cada uno con su tipografía, grosor, tamaño, color, opacidad, mayúsculas,
-    cursiva, contorno, resplandor de neón, espaciado y giro.
+    cursiva, contorno, resplandor de neón, efecto (3D, sombra larga, sombra o
+    doble contorno), espaciado y giro.
   - Admiten los campos `{titulo}`, `{artista}`, etc.
 - **Lista de canciones**: en anillos alrededor del agujero, que se reparten
   en varias vueltas si no cabe; a los lados; o debajo. Con o sin duraciones.
@@ -268,10 +287,10 @@ discos. También se pueden exportar e importar como archivo
   - **Fontsource**: las libres que no están en Google, como Redaction,
     Metropolis, Geist o Iosevka.
 - Filtros por tipo (sin serifa, con serifa, display, manuscritas,
-  monoespaciadas), por estilo (góticas, grafiti, retro, píxel, futuristas,
-  terror, caligrafía, elegantes, condensadas, máquina de escribir) y por
-  origen. Se ordenan por popularidad, por nombre o por novedad.
-- 73 familias vienen incluidas y funcionan sin conexión; las demás se
+  monoespaciadas), por estilo (3D / relieve, de color, góticas, grafiti,
+  retro, píxel, futuristas, terror, caligrafía, elegantes, condensadas,
+  máquina de escribir) y por origen. Se ordenan por popularidad, por nombre o por novedad.
+- 122 familias vienen incluidas y funcionan sin conexión; las demás se
   descargan al elegirlas.
 - El catálogo se regenera con `node scripts/build-font-catalog.js`.
 
@@ -280,8 +299,8 @@ discos. También se pueden exportar e importar como archivo
 - **El código de la app** es MIT (ver `LICENSE`). Las tipografías y
   bibliotecas de terceros tienen sus propias licencias: ver
   `THIRD-PARTY-NOTICES.md`.
-- **Tipografías incluidas en la app** (73): licencia SIL Open Font License
-  1.1, salvo 3 con Apache 2.0. Ambas permiten redistribuirlas, también
+- **Tipografías incluidas en la app** (122): licencia SIL Open Font License
+  1.1, salvo 7 con Apache 2.0. Ambas permiten redistribuirlas, también
   dentro de una app, siempre que vayan acompañadas de su licencia.
 - **Bibliotecas incluidas**: JsBarcode, qrcode-generator, SortableJS y
   html-to-image (MIT), y Electron en la app de escritorio. electron-builder

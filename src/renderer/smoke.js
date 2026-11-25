@@ -120,7 +120,10 @@ export async function runSmoke({ commands, showTab, exportLabelsPdf, exportLabel
   const { LABEL_PRESETS, applyLabelPreset, normalizeLabel } = await import('../shared/disc-label.js');
   const sheetCfg = () => JSON.parse(localStorage.getItem('cdb.labelSheet'));
   for (const p of LABEL_PRESETS) {
-    commit((s) => { s.label = applyLabelPreset(normalizeLabel(s.label), p.id); }, { rebuild: 'label' });
+    const { withCustomFont, loadCustomFonts, isBundled } = await import('../shared/fonts.js');
+    const extra = p.make().texts.map((t) => t.font).filter((f) => f && !isBundled(f));
+    if (extra.length) await loadCustomFonts(extra);
+    commit((s) => { s.label = applyLabelPreset(normalizeLabel(s.label), p.id); for (const f of extra) s.customFonts = withCustomFont(s.customFonts, f); }, { rebuild: 'label' });
     await wait(300);
     report.steps.push({ name: `export-pegatina-${p.id}`, ok: !!(await window.api.exportLabelPng({ state: store.state, assets: usedAssets(), suggestedName: `estilo-${p.id}`, sheet: sheetCfg() })) });
   }
@@ -199,7 +202,7 @@ export async function runSmoke({ commands, showTab, exportLabelsPdf, exportLabel
   commit((s) => { s.booklet.enabled = false; s.images.stickers = []; s.colorByGroup = false; }, { rebuild: true });
   const only = (await window.api.smokeOnly?.()) || null;
   const ids = ['two-columns', 'setlist', 'lineup', 'terminal', 'notes', 'coquette', 'acid', 'book-index', 'playlist', 'y2k', 'vinyl', 'cassette', 'polaroid',
-    'fanzine', 'brutalist', 'artdeco', 'synthwave', 'bauhaus', 'newspaper', 'boarding', 'gameboy', 'postcard', 'menu', 'trap-gotico', 'flyer-barrio', 'radio-pop', 'collage-ls'];
+    'fanzine', 'brutalist', 'artdeco', 'synthwave', 'bauhaus', 'newspaper', 'boarding', 'gameboy', 'postcard', 'menu', 'trap-gotico', 'flyer-barrio', 'radio-pop', 'collage-ls', 'pop3d', 'comic', 'gold-record'];
   for (const id of only || ids) {
     await step(`09-${id}`, () => { switchTemplate(id); showTab('design'); });
     report[`overflow-${id}`] = lastAnalysis;

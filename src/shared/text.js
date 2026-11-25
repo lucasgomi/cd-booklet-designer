@@ -47,7 +47,7 @@ export function abbreviationCandidates(title) {
 
   // "(Live at the BBC's Maida Vale)" -> "(Maida Vale)"
   // (y se quita el posesivo: "the BBC's Maida Vale" -> "Maida Vale").
-  t = t.replace(/([([])\s*(live at|live from|live in|en vivo en|en directo en|en vivo desde)\s+/gi, '$1');
+  t = t.replace(/([([])\s*(live at|live from|live in|en vivo en|en directo en|en vivo desde)\s+(the\s+)?/gi, '$1');
   t = t.replace(/([([])[^)\]]*?['’]s\s+/g, '$1');
   push(t);
 

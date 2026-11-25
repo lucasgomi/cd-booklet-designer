@@ -7,7 +7,7 @@ import {
 } from '../../shared/disc-label.js';
 import { currentStyle } from '../../shared/model.js';
 import { mountSheet } from '../../shared/render.js';
-import { fontWeights, withCustomFont } from '../../shared/fonts.js';
+import { fontWeights, withCustomFont, isBundled, loadCustomFonts } from '../../shared/fonts.js';
 import { PLACEHOLDER_HELP } from '../../shared/text.js';
 import { newId } from '../../shared/tracklist.js';
 import { fontButton } from '../fontpicker.js';
@@ -327,8 +327,11 @@ function presetsSection() {
   for (const p of LABEL_PRESETS) {
     const mini = h('div', { class: 'lp-mini' });
     const b = h('button', { type: 'button', class: 'lp-card', title: p.name }, mini, h('span', { text: p.name }));
-    b.addEventListener('click', () => {
+    b.addEventListener('click', async () => {
       selected = null;
+      // Las tipografías del estilo que no vienen incluidas se descargan antes.
+      const extra = p.make().texts?.map((t) => t.font).filter((f) => f && !isBundled(f)) || [];
+      if (extra.length) await loadCustomFonts(extra);
       setL((l, s) => {
         const next = applyLabelPreset(l, p.id);
         s.label = next;
@@ -428,6 +431,13 @@ function textCard(T, i, n) {
       toggle(T.uppercase, (v) => set({ uppercase: v }), 'MAYÚSCULAS'),
       toggle(T.italic, (v) => set({ italic: v }), 'Cursiva'),
       toggle(T.outline, (v) => set({ outline: v }, true), 'Contorno')),
+    row('Efecto', select(T.effect || 'none', [
+      { value: 'none', label: 'Ninguno' }, { value: '3d', label: '3D (relieve)' }, { value: 'long', label: 'Sombra larga' },
+      { value: 'shadow', label: 'Sombra' }, { value: 'double', label: 'Doble contorno' },
+    ], (v) => set({ effect: v }, true)), { half: true }),
+    T.effect && T.effect !== 'none' ? row('Color del efecto', colorInput(T.effectColor || '#000000', (v) => set({ effectColor: v })), { half: true }) : null,
+    T.effect && T.effect !== 'none' ? row(T.effect === 'double' ? 'Grosor' : 'Profundidad', numberInput(T.effectDepth ?? 1.5, { min: 0.2, max: 8, step: 0.1, unit: 'mm' }, (v) => set({ effectDepth: v })), { half: true }) : null,
+    T.effect && !['none', 'double'].includes(T.effect) ? row('Dirección', numberInput(T.effectAngle ?? 45, { min: 0, max: 360, step: 5, unit: '°' }, (v) => set({ effectAngle: v })), { half: true }) : null,
     row('Resplandor (neón)', opacityInput(T.glow || 0, (v) => set({ glow: v }, (v > 0) !== ((T.glow || 0) > 0))), { half: true }),
     T.glow > 0 ? row('Color del resplandor', colorInput(T.glowColor || '#FFFFFF', (v) => set({ glowColor: v })), { half: true }) : null,
     T.outline ? row('Color del contorno', colorInput(T.outlineColor, (v) => set({ outlineColor: v })), { half: true }) : null,
