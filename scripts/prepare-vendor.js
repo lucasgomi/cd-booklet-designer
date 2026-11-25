@@ -96,6 +96,7 @@ const copy = (from, to) => fs.copyFileSync(path.join(nm, from), path.join(vendor
 copy('jsbarcode/dist/JsBarcode.all.min.js', 'JsBarcode.all.min.js');
 copy('qrcode-generator/dist/qrcode.js', 'qrcode.js');
 copy('sortablejs/Sortable.min.js', 'Sortable.min.js');
+copy('html-to-image/dist/html-to-image.js', 'html-to-image.js'); // PNG en la versión web
 
 let css = '';
 const catalog = [];

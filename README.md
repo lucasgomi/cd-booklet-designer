@@ -19,6 +19,23 @@ ejecutables:
 Al abrir la app por primera vez se carga un proyecto de ejemplo para que
 veas cómo funciona.
 
+## Versión web
+
+También funciona en el navegador, sin instalar nada:
+**https://lucasgomi.github.io/cd-booklet-designer/**
+
+Es la misma app, con estas diferencias:
+
+- **Exportar PDF** abre el diálogo de imprimir del navegador. Ahí eliges
+  «Guardar como PDF» (o la impresora) con escala 100 % y sin márgenes.
+- **Guardar** en Chrome y Edge sobrescribe el mismo `.cdbook`. En otros
+  navegadores descarga una copia.
+- Las plantillas propias se guardan en el navegador.
+- Las tipografías que no vienen incluidas necesitan conexión.
+
+Se publica sola con cada cambio en `main` (workflow «Web (GitHub Pages)»).
+Para montarla en local: `npm run build:web` y servir la carpeta `dist-web/`.
+
 ## Qué hace
 
 **Datos del disco** (pestaña *Disco*)

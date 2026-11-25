@@ -15,6 +15,7 @@ import { exampleProject } from './example.js';
 import { toast } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
+export const WEB_PRINT_HINT = 'En el diálogo de imprimir elige «Guardar como PDF» (o tu impresora), escala 100 % / tamaño real y sin márgenes.';
 const openPaste = setupPasteDialog();
 
 // ------------------------------------------------------------- paneles
@@ -147,7 +148,7 @@ async function exportPdf() {
   try {
     const res = await window.api.exportPdf(exportPayload());
     if (!res) { toast('Exportación cancelada.'); return null; }
-    toast(`PDF guardado. Recuerda: imprimir al 100 % / tamaño real.`, 'ok', 7000);
+    toast(res.path ? 'PDF guardado. Recuerda: imprimir al 100 % / tamaño real.' : WEB_PRINT_HINT, 'ok', 9000);
     if (!(await window.api.smokeDir())) window.api.showInFolder(res.path);
     return res;
   } catch (err) {

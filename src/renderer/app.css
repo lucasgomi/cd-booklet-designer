@@ -378,3 +378,7 @@ dialog textarea { font-family: 'JetBrains Mono', Consolas, monospace; font-size:
 .lt-head select { width: 104px; flex: none; }
 .inline-toggles { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .field.inline-toggles { flex-direction: row; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+
+/* Versión web */
+.web-download { color: var(--accent); text-decoration: none; font-size: 12.5px; border: 1px solid rgba(242, 156, 143, .4); border-radius: 999px; padding: 3px 10px; margin-left: 4px; white-space: nowrap; }
+.web-download:hover { background: rgba(242, 156, 143, .12); }

@@ -144,7 +144,7 @@ export async function exportLabelsPdf(test = false) {
   try {
     const res = await window.api.exportLabels(payload(), { test });
     if (!res) { toast('Exportación cancelada.'); return null; }
-    toast('PDF guardado. Imprime al 100 % / tamaño real, sin «ajustar a la página».', 'ok', 7000);
+    toast(res.path ? 'PDF guardado. Imprime al 100 % / tamaño real, sin «ajustar a la página».' : 'En el diálogo de imprimir elige «Guardar como PDF» (o tu impresora), escala 100 % / tamaño real y sin márgenes.', 'ok', 9000);
     if (!(await window.api.smokeDir())) window.api.showInFolder(res.path);
     return res;
   } catch (err) {
