@@ -202,6 +202,17 @@ const commands = {
 };
 
 window.api.onMenu((cmd) => commands[cmd]?.());
+
+// Móvil: menú «⋯» con lo que en el ordenador va en la barra superior.
+{
+  const menu = $('mobile-menu');
+  const btn = $('mobile-menu-btn');
+  const setOpen = (open) => { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
+  btn.addEventListener('click', (e) => { e.stopPropagation(); setOpen(menu.hidden); });
+  menu.addEventListener('click', (e) => { if (e.target.closest('button, a')) setOpen(false); });
+  document.addEventListener('pointerdown', (e) => { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) setOpen(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+}
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('[data-cmd]');
   if (btn) commands[btn.dataset.cmd]?.();

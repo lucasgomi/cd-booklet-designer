@@ -20,6 +20,14 @@ de la misma app**, y las dos son igual de importantes:
 2. **La web tiene que ir bien en el móvil.**
    - Las reglas de pantalla estrecha están en el bloque
      `@media (max-width: 820px)` de `src/renderer/app.css`.
+   - En el móvil la maqueta es otra:
+     - Barra compacta arriba (plantilla, deshacer y menú «⋯»; las acciones
+       del menú llevan `data-cmd`).
+     - Vista previa grande debajo, con el botón ⤢ para ampliarla.
+     - Opciones debajo de la vista previa.
+     - Pestañas abajo, con icono.
+   - En el ordenador se mantiene el panel lateral. Los elementos `.desk-only`
+     y `.mobile-only` separan las dos maquetas.
    - Nada puede desbordar a lo ancho, los controles deben ser cómodos para
      el dedo y los arrastres usan eventos `pointer`.
    - Pruébalo con Playwright en un móvil emulado (`devices['iPhone 13']`).

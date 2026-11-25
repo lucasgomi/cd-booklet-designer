@@ -17,7 +17,7 @@
 <body>
   <header class="topbar">
     <div class="brand"><span class="brand-disc"></span>CD Booklet Designer</div>
-    <div class="group">
+    <div class="group desk-only">
       <button data-cmd="new" title="Nuevo proyecto (Ctrl+N)">Nuevo</button>
       <button data-cmd="open" title="Abrir proyecto (Ctrl+O)">Abrir…</button>
       <button data-cmd="save" title="Guardar (Ctrl+S)">Guardar</button>
@@ -33,25 +33,41 @@
     <div class="print-note" title="Al imprimir el PDF, elige «Tamaño real» o «100 %». No uses «Ajustar a la página».">
       ⚠ Imprimir al 100 % / tamaño real
     </div>
-    <div class="group">
+    <div class="group desk-only">
       <button data-cmd="export-pdf" class="primary">Exportar PDF</button>
       <button data-cmd="export-png">Exportar PNG</button>
       <button data-cmd="licenses" class="icon" title="Acerca de y licencias">ⓘ</button>
     </div>
+    <button class="icon mobile-only" id="mobile-menu-btn" aria-label="Más opciones" aria-expanded="false">⋯</button>
   </header>
+
+  <!-- Móvil: lo que en el ordenador va en la barra superior. -->
+  <div class="mobile-menu" id="mobile-menu" hidden>
+    <button data-cmd="new">Nuevo proyecto</button>
+    <button data-cmd="open">Abrir…</button>
+    <button data-cmd="save">Guardar</button>
+    <button data-cmd="save-as">Guardar como…</button>
+    <hr>
+    <button data-cmd="export-pdf" class="primary">Exportar PDF (imprimir al 100 %)</button>
+    <button data-cmd="export-png">Exportar PNG (300 ppp)</button>
+    <button data-cmd="export-labels">Pegatinas del CD (PDF)</button>
+    <hr>
+    <a class="web-only" href="https://github.com/lucasgomi/cd-booklet-designer/releases/latest" target="_blank" rel="noopener">⬇ App para Windows</a>
+    <button data-cmd="licenses">Acerca de y licencias</button>
+  </div>
 
   <div class="update-bar" id="update-bar" hidden></div>
 
   <main>
     <aside class="sidebar">
       <nav class="tabs" id="tabs">
-        <button data-tab="disc" class="active">Disco</button>
-        <button data-tab="tracks">Canciones</button>
-        <button data-tab="gallery">Plantilla</button>
-        <button data-tab="design">Diseño</button>
-        <button data-tab="images">Imágenes</button>
-        <button data-tab="booklet">Librito</button>
-        <button data-tab="label">Pegatina</button>
+        <button data-tab="disc" class="active"><span class="tab-ico" aria-hidden="true">💿</span>Disco</button>
+        <button data-tab="tracks"><span class="tab-ico" aria-hidden="true">🎵</span>Canciones</button>
+        <button data-tab="gallery"><span class="tab-ico" aria-hidden="true">🗂</span>Plantilla</button>
+        <button data-tab="design"><span class="tab-ico" aria-hidden="true">🎨</span>Diseño</button>
+        <button data-tab="images"><span class="tab-ico" aria-hidden="true">🖼</span>Imágenes</button>
+        <button data-tab="booklet"><span class="tab-ico" aria-hidden="true">📖</span>Librito</button>
+        <button data-tab="label"><span class="tab-ico" aria-hidden="true">🏷</span>Pegatina</button>
       </nav>
       <div class="tab-body" id="tab-disc"></div>
       <div class="tab-body" id="tab-tracks" hidden></div>
@@ -63,6 +79,7 @@
     </aside>
 
     <section class="stage">
+      <button data-cmd="toggle-preview" class="stage-fab mobile-only" id="toggle-preview" title="Vista previa más grande" aria-label="Vista previa más grande">⤢</button>
       <div class="stage-bar">
         <button data-cmd="zoom-out" class="icon" title="Alejar">−</button>
         <span id="zoom-label">100 %</span>
@@ -72,7 +89,6 @@
         <div class="spacer"></div>
         <span id="size-label" class="muted"></span>
         <span class="label-only muted">Pegatina del CD · pincha un texto para moverlo, girarlo o cambiar su tamaño</span>
-        <button data-cmd="toggle-preview" class="icon mobile-only" id="toggle-preview" title="Vista previa más grande">⤢</button>
       </div>
       <div class="canvas" id="canvas">
         <div class="sheet-frame" id="sheet-frame"><div id="sheet-host"></div></div>

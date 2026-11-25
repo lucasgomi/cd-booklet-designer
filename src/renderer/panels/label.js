@@ -481,7 +481,13 @@ export function renderLabelPanel(root) {
   root.replaceChildren();
 
   root.appendChild(section('Pegatina del CD',
-    h('p', { class: 'help', text: 'La pegatina se edita en la vista previa grande. Pincha un texto para elegirlo: los rectos se arrastran y tienen tiradores para el tamaño (abajo a la derecha) y el giro (arriba); los curvos giran alrededor del disco y, tirando hacia dentro o fuera, se separan del borde. También: flechas para mover (Mayús, más rápido), + y − o la rueda para el tamaño, doble clic para escribir y Supr para borrar.' })));
+    h('p', { class: 'help', text: 'Se edita en la vista previa: pincha un texto para moverlo, girarlo o cambiar su tamaño.' }),
+    h('details', { class: 'label-howto' },
+      h('summary', { text: 'Cómo mover los textos' }),
+      h('ul', {},
+        h('li', { text: 'Rectos: arrástralos. El tirador de abajo a la derecha cambia el tamaño y el de arriba los gira.' }),
+        h('li', { text: 'En curva: arrastra alrededor del disco para girarlos, y hacia dentro o fuera para separarlos del borde.' }),
+        h('li', { text: 'Con teclado: flechas para mover (Mayús, más rápido), + y − o la rueda para el tamaño, doble clic para escribir, Supr para borrar.' })))));
   root.appendChild(presetsSection());
   root.appendChild(backgroundSection(L));
   root.appendChild(textsSection(L));
